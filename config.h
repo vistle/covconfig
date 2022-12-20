@@ -1,31 +1,29 @@
-#ifndef CONFIG_CONFIG_H
-#define CONFIG_CONFIG_H
+// Copyright (C) High-Performance Computing Center Stuttgart (https://www.hlrs.de/)
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-#include <string>
-#include "export.h"
+/// \file config.h
+/// convenience header for accessing the complete library interface
+#pragma once
 
 #ifdef CONFIG_NAMESPACE
+/// optional toplevel namespace
+/** #define CONFIG_NAMESPACE in order to build an independent instance of the configuration
+    library where all entities are defined within the toplevel namespace CONFIG_NAMESPACE
+ */
+
 namespace CONFIG_NAMESPACE {
 #endif
 
+/// namespace for CovConfig API
 namespace config {
 
-class V_CONFIGEXPORT Accessor {
-    Accessor();
-    Accessor(const std::string &cluster, int rank);
-    void setPrefix(const std::string &dir);
-    virtual ~Accessor();
-};
-
-bool V_CONFIGEXPORT
-init(const std::string &cluster = std::string(),
-     int rank = -1); //< initiate access to config system and configure look-up for cluster/rank specific entries
-bool isConfigured(); //< whether config system is ready for use
-bool V_CONFIGEXPORT acquire(); //< initiate access to config system
-bool V_CONFIGEXPORT release(); //< revoke access to config system
-void V_CONFIGEXPORT setPrefix(const std::string &dir); //< add software installation as additional source directory
-}
+/// internal CovConfig namespace
+namespace detail {}
+} // namespace config
 #ifdef CONFIG_NAMESPACE
 }
 #endif
-#endif
+
+#include "access.h"
+#include "value.h"
+#include "array.h"

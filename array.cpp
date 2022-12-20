@@ -1,69 +1,94 @@
-#include "array.h"
-#include "entry.h"
-#include "manager.h"
-#include "manager_impl.h"
-#include "entry_impl.h"
+// Copyright (C) High-Performance Computing Center Stuttgart (https://www.hlrs.de/)
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-#include <toml++/toml.h>
+#include "array.h"
+#include "detail/entry.h"
+#include "detail/manager.h"
+#include "detail/output.h"
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
 #endif
 
 namespace config {
+using namespace detail;
 
 template<class V>
-Array<V>::Array(const std::string &path, const std::string &section, const std::string &name)
+Array<V>::Array(const std::string &path, const std::string &section, const std::string &name, detail::Manager *mgr)
+: ConfigBase("Array")
 {
-    m_entry = Manager::the()->getArray<V>(path, section, name);
-    m_entry->addObserver(this);
+    if (!mgr)
+        mgr = Manager::the();
+    m_entry = mgr->getArray<V>(path, section, name, Flag::Default);
+    entry()->addObserver(this);
 }
 
 template<class V>
-Array<V>::Array(const std::string &path, const std::string &section, const std::string &name, const V &defaultValue)
-: m_defaultValueValid(true), m_defaultValue(defaultValue)
+Array<V>::Array(const std::string &path, const std::string &section, const std::string &name,
+                const std::vector<V> &value, detail::Manager *mgr, Flag flags)
+: ConfigBase("Array")
 {
-    m_entry = Manager::the()->getArray<V>(path, section, name);
-    m_entry->addObserver(this);
+    if (!mgr)
+        mgr = Manager::the();
+    m_entry = mgr->getArray<V>(path, section, name, flags);
+    std::vector<typename detail::VectorStorage<V>::Type> val(value.size());
+    for (size_t i = 0; i < value.size(); ++i) {
+        val[i] = value[i];
+    }
+    entry()->setOrCheckDefaultValue(val);
+    debug() << key() << " initialized to " << entry()->value() << " (default: " << defaultValue() << ")" << std::endl;
+    entry()->addObserver(this);
+    entry()->assign();
+}
+
+template<class V>
+Array<V>::Array(ArrayEntry<V> *entry): ConfigBase("Array")
+{
+    m_entry = entry;
+    entry->addObserver(this);
 }
 
 template<class V>
 Array<V>::~Array()
 {
-    m_entry->removeObserver(this);
+    entry()->removeObserver(this);
 }
 
 template<class V>
-bool Array<V>::exists() const
+ArrayEntry<V> *Array<V>::entry() const
 {
-    return m_entry->exists();
+    return static_cast<ArrayEntry<V> *>(m_entry);
 }
 
 template<class V>
 size_t Array<V>::size() const
 {
-    return m_entry->size();
+    return entry()->size();
 }
 
 template<class V>
 void Array<V>::resize(size_t size)
 {
-    return m_entry->resize(size, m_defaultValue);
+    return entry()->resize(size);
 }
 
 template<class V>
-const V &Array<V>::operator[](size_t index) const
+V Array<V>::operator[](size_t index) const
 {
-    if (m_defaultValueValid && index >= size())
-        return m_defaultValue;
-    return m_entry->at(index);
+    return entry()->at(index);
 }
 
 template<class V>
 typename Array<V>::ValueProxy &Array<V>::ValueProxy::operator=(const V &value)
 {
-    array->m_entry->at(index) = value;
-    array->m_entry->store(index);
+    if (array) {
+        if (array->entry()->at(index) != value) {
+            array->entry()->at(index) = value;
+            array->entry()->setModified();
+        }
+    } else {
+        array->error("ValueProxy[]") << "array is null when trying to set index " << index;
+    }
     return *this;
 }
 
@@ -71,6 +96,7 @@ template<class V>
 typename Array<V>::ValueProxy Array<V>::operator[](size_t index)
 {
     if (index >= size()) {
+        debug("operator[]") << "resizing from " << size() << " for access at " << index << std::endl;
         resize(index + 1);
     }
     ValueProxy vp{this, index};
@@ -78,22 +104,65 @@ typename Array<V>::ValueProxy Array<V>::operator[](size_t index)
 }
 
 template<class V>
-void Array<V>::update(size_t index)
+Array<V>::ValueProxy::~ValueProxy()
 {
-    std::cerr << "update@" << index << ", size=" << size();
-    if (index < size()) {
-        std::cerr << ", val=" << m_entry->at(index);
-    }
-    std::cerr << std::endl;
-    if (m_updater)
-        m_updater(index);
+    array->entry()->store();
 }
 
 template<class V>
-void Array<V>::setUpdater(std::function<void(size_t)> func)
+Array<V> &Array<V>::operator=(const std::vector<V> &val)
+{
+    if (size() != val.size())
+        resize(val.size());
+    for (size_t c = 0; c < size(); ++c) {
+        if (entry()->at(c) != val[c]) {
+            entry()->at(c) = val[c];
+            entry()->setModified();
+        }
+    }
+    entry()->store();
+    return *this;
+}
+
+template<class V>
+std::vector<V> Array<V>::value() const
+{
+    std::vector<V> vec(size());
+    for (size_t c = 0; c < size(); ++c) {
+        vec[c] = entry()->at(c);
+    }
+    return vec;
+}
+
+template<class V>
+std::vector<V> Array<V>::defaultValue() const
+{
+    std::vector<V> vec(size());
+    for (size_t c = 0; c < size(); ++c) {
+        vec[c] = entry()->defaultValue().at(c);
+    }
+    return vec;
+}
+
+template<class V>
+void Array<V>::update()
+{
+    auto &str = debug("update");
+    str << key() << ": have updater: " << (m_updater ? "yes" : "no");
+    str << " {";
+    for (auto v: entry()->value())
+        str << " " << v;
+    str << " }";
+    str << std::endl;
+    if (m_updater)
+        m_updater();
+}
+
+template<class V>
+void Array<V>::setUpdater(std::function<void()> func)
 {
     m_updater = func;
-    update(size());
+    update();
 }
 
 

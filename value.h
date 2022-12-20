@@ -1,9 +1,14 @@
-#ifndef CONFIG_VALUE_H
-#define CONFIG_VALUE_H
+// Copyright (C) High-Performance Computing Center Stuttgart (https://www.hlrs.de/)
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+/// \file value.h
+/// provide access to a single configuration value
+#pragma once
 
 #include <string>
-#include "export.h"
-#include "observer.h"
+#include "detail/export.h"
+#include "detail/flags.h"
+#include "detail/base.h"
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
@@ -11,45 +16,58 @@ namespace CONFIG_NAMESPACE {
 
 namespace config {
 
-class EntryBase;
-template<class V> class Entry;
+namespace detail {
+class Manager;
+/// opaque storage for \ref Value's of type V
+template<class V>
+class ValueEntry;
+} // namespace detail
 
 /// access an individual configuration value
 /** retrieve, modify and store an individual configuration value.
 Boolean (`bool`), integral (`int64_t`), floating point (`double`) and string (`std::string`) data is supported.
 */
 template<class V>
-class Value: private ValueObserver {
+class Value: public ConfigBase {
+    friend class detail::ValueEntry<V>;
+
 public:
-    Value(const std::string &path, const std::string &section, const std::string &name, const V &value = V());
-    virtual ~Value();
-    void setUpdater(std::function<void(const V &)> func);
-    bool exists() const;
-    const V &value() const;
-    operator V() const;
-    Value &operator=(const V &value);
+    Value() = delete;
+    Value(const Value &other) =
+        delete; ///< removed as copying does not work well when functor objects are provided via \ref setUpdater
+    Value(const std::string &path, const std::string &section, const std::string &name,
+          detail::Manager *mgr = nullptr); ///< create from an existing entry managed by mgr (or the default manager)
+    Value(const std::string &path, const std::string &section, const std::string &name, const V &value,
+          detail::Manager *mgr = nullptr,
+          Flag flags =
+              Flag::Default); ///< create new entry with default value, must match default and flags at other locations
+    ~Value() override;
+    void setUpdater(std::function<void(const V &)> func); ///< set `func` to be notified when value changes
+    const V &value() const; ///< retrieve value
+    const V &defaultValue() const; ///< retrieve default value
+    operator V() const; ///< retrieve value
+    Value &operator=(const V &value); ///< assign a new value
 
 private:
-    void update() override;
-    Entry<V> *m_entry = nullptr;
-    std::function<void(const V &)> m_updater;
+    Value(detail::ValueEntry<V> *entry); ///< create from a provided existing entry where data is stored
+
+    void update() override; ///< called when value is changed
+    detail::ValueEntry<V> *entry() const; ///< access storage of value
+    std::function<void(const V &)> m_updater; ///< change listener
 };
 
-extern template class V_CONFIGEXPORT Value<bool>;
-extern template class V_CONFIGEXPORT Value<int64_t>;
-extern template class V_CONFIGEXPORT Value<double>;
-extern template class V_CONFIGEXPORT Value<std::string>;
-
+extern template class COVEXPORT Value<bool>; ///< instantiated type
+extern template class COVEXPORT Value<int64_t>; ///< instantiated type
+extern template class COVEXPORT Value<double>; ///< instantiated type
+extern template class COVEXPORT Value<std::string>; ///< instantiated type
 }
 #ifdef CONFIG_NAMESPACE
 template<class V>
-using ConfigValue = config::Value<V>;
+using ConfigValue = config::Value<V>; ///< bring into provided namespace
 
-typedef ConfigValue<bool> ConfigBool;
-typedef ConfigValue<int64_t> ConfigInt;
-typedef ConfigValue<double> ConfigFloat;
-typedef ConfigValue<std::string> ConfigString;
-
+typedef ConfigValue<bool> ConfigBool; ///< convenience typedef
+typedef ConfigValue<int64_t> ConfigInt; ///< convenience typedef
+typedef ConfigValue<double> ConfigFloat; ///< convenience typedef
+typedef ConfigValue<std::string> ConfigString; ///< convenience typedef
 }
-#endif
 #endif

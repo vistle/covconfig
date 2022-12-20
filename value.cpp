@@ -1,40 +1,70 @@
-#include "value.h"
-#include "entry.h"
-#include "manager.h"
-#include "manager_impl.h"
-#include "entry_impl.h"
+// Copyright (C) High-Performance Computing Center Stuttgart (https://www.hlrs.de/)
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
-#include <toml++/toml.h>
+#include "value.h"
+#include "detail/entry.h"
+#include "detail/manager.h"
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
 #endif
 
 namespace config {
+using namespace detail;
 
 template<class V>
-Value<V>::Value(const std::string &path, const std::string &section, const std::string &name, const V &value)
+Value<V>::Value(const std::string &path, const std::string &section, const std::string &name, const V &value,
+                Manager *mgr, Flag flags)
+: ConfigBase("Value")
 {
-    m_entry = Manager::the()->getEntry(path, section, name, value);
-    m_entry->addObserver(this);
+    if (!mgr)
+        mgr = Manager::the();
+    m_entry = mgr->getValue<V>(path, section, name, flags);
+    entry()->setOrCheckDefaultValue(value);
+    debug() << key() << " initialized to " << entry()->value() << " (default: " << defaultValue() << ")" << std::endl;
+    entry()->addObserver(this);
+    entry()->assign();
+}
+
+template<class V>
+Value<V>::Value(const std::string &path, const std::string &section, const std::string &name, Manager *mgr)
+: ConfigBase("Value")
+{
+    if (!mgr)
+        mgr = Manager::the();
+    m_entry = mgr->getValue<V>(path, section, name, Flag::Default);
+    entry()->addObserver(this);
+}
+
+template<class V>
+Value<V>::Value(ValueEntry<V> *entry): ConfigBase("Value")
+{
+    m_entry = entry;
+    entry->addObserver(this);
 }
 
 template<class V>
 Value<V>::~Value()
 {
-    m_entry->removeObserver(this);
+    entry()->removeObserver(this);
 }
 
 template<class V>
-bool Value<V>::exists() const
+ValueEntry<V> *Value<V>::entry() const
 {
-    return m_entry->exists();
+    return static_cast<ValueEntry<V> *>(m_entry);
+}
+
+template<class V>
+const V &Value<V>::defaultValue() const
+{
+    return entry()->defaultValue();
 }
 
 template<class V>
 const V &Value<V>::value() const
 {
-    return m_entry->value();
+    return entry()->value();
 }
 
 template<class V>
@@ -46,16 +76,17 @@ Value<V>::operator V() const
 template<class V>
 Value<V> &Value<V>::operator=(const V &value)
 {
-    *m_entry = value;
+    *entry() = value;
     return *this;
 }
 
 template<class V>
 void Value<V>::update()
 {
-    std::cerr << "update: val = " << m_entry->value() << std::endl;
+    debug("update") << key() << ": have updater: " << (m_updater ? "yes" : "no") << ", value=" << entry()->value()
+                    << std::endl;
     if (m_updater)
-        m_updater(m_entry->value());
+        m_updater(entry()->value());
 }
 
 template<class V>

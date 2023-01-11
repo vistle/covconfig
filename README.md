@@ -4,7 +4,7 @@ CovConfig - COVISE, OpenCOVER & Vistle Configuration Subsystem
 License
 -------
 
-Licensed under the LGPL v2.1, see `LICENSE` for details.
+Licensed under the LGPL v2.1 or newer, see `LICENSE` for details.
 
 Build Requirements
 ------------------

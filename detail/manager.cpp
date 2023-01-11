@@ -11,9 +11,9 @@
 
 #include <toml++/toml.h>
 
-
 #include <iostream>
 #include <cstdio>
+#include <cassert>
 
 #ifdef _WIN32
 #else

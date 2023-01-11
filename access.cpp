@@ -7,6 +7,7 @@
 #include "detail/manager.h"
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {

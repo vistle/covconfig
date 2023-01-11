@@ -7,6 +7,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include "detail/export.h"
 #include "detail/flags.h"
 #include "detail/logger.h"

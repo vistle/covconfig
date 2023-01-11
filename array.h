@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 #include "detail/export.h"
 #include "detail/flags.h"
 #include "detail/base.h"

@@ -27,9 +27,9 @@ class Bridge;
 namespace detail {
 
 struct Config {
-    std::string path;
+    std::string path; // path fragment
+    std::string base; // base directory
     toml::table config;
-    std::string base;
     bool modified;
 };
 
@@ -61,7 +61,7 @@ public:
     const std::string &cluster() const;
     int rank() const;
 
-    Config &registerEntry(const Entry *entry, const std::string &path, const std::string &section);
+    Config &registerPath(const std::string &path);
     template<class V>
     ValueEntry<V> *getValue(const std::string &path, const std::string &section, const std::string &name, Flag flags);
     template<class V>

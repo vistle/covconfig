@@ -1,7 +1,7 @@
 PROJECT_NAME           = "CovConfig"
 PROJECT_BRIEF          = COVISE, OpenCOVER and Vistle Configuration Library
 
-INPUT                  = README.md access.h array.h value.h config.h detail/base.h
+INPUT                  = README.md access.h array.h value.h file.h config.h detail/base.h
 
 USE_MDFILE_AS_MAINPAGE = README.md
 MARKDOWN_SUPPORT       = YES

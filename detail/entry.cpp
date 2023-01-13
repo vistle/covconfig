@@ -26,7 +26,7 @@ Entry::Entry(const std::string &classname, Manager *mgr, const std::string &path
 , m_section(section)
 , m_name(name)
 , m_flags(flags)
-, m_config(mgr->registerEntry(this, path, section))
+, m_config(mgr->registerPath(path))
 {
     bool secInvalid = m_section.find(' ') != std::string::npos || m_section.find('-') != std::string::npos;
     bool nameInvalid = m_name.find(' ') != std::string::npos || m_name.find('-') != std::string::npos ||

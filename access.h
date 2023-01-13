@@ -21,6 +21,7 @@ namespace config {
 namespace detail {
 class Manager;
 }
+class File;
 class ConfigBase;
 template<class V>
 class Value;
@@ -53,6 +54,8 @@ public:
     void setPrefix(const std::string &dir); ///< set software installation prefix as additional search path
     bool setWorkspaceBridge(Bridge *bridge); ///< specify \ref Bridge for accessing per-model configuration values
     bool removeWorkspaceBridge(Bridge *bridge); ///< remove per-model configuration \ref Bridge
+
+    std::unique_ptr<File> file(const std::string &path) const; ///< get interface to a configuration file
 
     template<class V>
     std::unique_ptr<Value<V>> value(const std::string &path, const std::string &section,

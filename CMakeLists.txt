@@ -9,8 +9,8 @@ project(
     DESCRIPTION "Config wrapper for COVISE, OpenCOVER and Vistle"
     LANGUAGES CXX)
 
-set(COVCONFIG_SOURCES access.cpp array.cpp value.cpp detail/base.cpp detail/entry.cpp detail/logger.cpp detail/manager.cpp detail/observer.cpp detail/output.cpp)
-set(COVCONFIG_HEADERS access.h array.h value.h detail/base.h config.h detail/entry.h detail/export.h detail/flags.h detail/logger.h detail/manager.h detail/manager_impl.h detail/observer.h detail/output.h)
+set(COVCONFIG_SOURCES access.cpp array.cpp file.cpp value.cpp detail/base.cpp detail/entry.cpp detail/logger.cpp detail/manager.cpp detail/observer.cpp detail/output.cpp)
+set(COVCONFIG_HEADERS access.h array.h file.h value.h detail/base.h config.h detail/entry.h detail/export.h detail/flags.h detail/logger.h detail/manager.h detail/manager_impl.h detail/observer.h detail/output.h)
 
 if(VISTLE_LIB_TYPE)
     set(TARGET vistle_covconfig)

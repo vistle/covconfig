@@ -31,6 +31,7 @@ Usage
 - access homogeneous arrays of values from configuration with `Array` template, `typedef`ed to `ConfigBoolArray`, `ConfigIntArray`, `ConfigFloatArray` and `ConfigStringArray` (`#include <array.h>`)
 - modification of values/arrays is possible, will be stored to user configuration directory when saving of configuration path is requested
 - install an update handler on `Value`s and `Array`s for being notified when values are changed from within same process
+- existing sections and entries can be queried with `File` (`#include <file.h>`)
 - revoke access with by destroying `Access`
 - on UNIX, search paths follow [XDG specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
 - in addition, the current directory and the config subdirectory of software installation prefix are searched

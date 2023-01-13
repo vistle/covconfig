@@ -192,7 +192,7 @@ const std::string &Manager::hostname() const
     return m_hostname;
 }
 
-Config &Manager::registerEntry(const Entry *entry, const std::string &path, const std::string &section)
+Config &Manager::registerPath(const std::string &path)
 {
     auto it = m_configs.find(path);
     if (it != m_configs.end()) {
@@ -233,14 +233,14 @@ Config &Manager::registerEntry(const Entry *entry, const std::string &path, cons
                                       << std::endl;
                 continue;
             }
-            Config config{path, tbl, dir, false};
+            Config config{path, dir, tbl, false};
             it = m_configs.emplace(path, config).first;
             return it->second;
         }
     }
 
     toml::table tbl;
-    Config config{path, tbl, m_userPath, false};
+    Config config{path, m_userPath, tbl, false};
     it = m_configs.emplace(path, config).first;
     return it->second;
 }

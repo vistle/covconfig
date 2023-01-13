@@ -4,6 +4,7 @@
 #include "access.h"
 #include "value.h"
 #include "array.h"
+#include "file.h"
 #include "detail/manager.h"
 #include <iostream>
 #include <cstdlib>
@@ -90,6 +91,11 @@ Access::~Access()
         m_manager->release();
     }
     m_manager = nullptr;
+}
+
+std::unique_ptr<File> Access::file(const std::string &path) const
+{
+    return std::make_unique<File>(path, m_manager);
 }
 
 template<class V>

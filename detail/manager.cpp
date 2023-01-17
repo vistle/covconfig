@@ -233,14 +233,15 @@ Config &Manager::registerPath(const std::string &path)
                                       << std::endl;
                 continue;
             }
-            Config config{path, dir, tbl, false};
+            Config config{path, dir, tbl};
+            config.exists = true;
             it = m_configs.emplace(path, config).first;
             return it->second;
         }
     }
 
     toml::table tbl;
-    Config config{path, m_userPath, tbl, false};
+    Config config{path, m_userPath, tbl};
     it = m_configs.emplace(path, config).first;
     return it->second;
 }

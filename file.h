@@ -34,6 +34,9 @@ public:
     File(const std::string &path, detail::Manager *mgr = nullptr); ///< create an interface to a configuration file
     ~File(); ///< destructor
 
+    bool exists() const;
+    const std::string pathname() const;
+
     std::vector<std::string> sections(); ///< all top-level sections
     std::vector<std::string> subsections(const std::string &section); ///< all subsections of a (sub-)section
     std::vector<std::string> entries(const std::string &section); ///< all entries within a (sub-)section

@@ -17,13 +17,10 @@ namespace CONFIG_NAMESPACE {
 namespace config {
 using namespace detail;
 
-File::File(const std::string &path, detail::Manager *mgr)
-: Logger("File"), m_manager(mgr ? mgr : Manager::the()), m_config(m_manager->registerPath(path))
-{}
-
-File::~File() = default;
-
 namespace {
+
+const std::string sep("/");
+
 const toml::table *table_for_section(const toml::table &root, const std::string &section)
 {
     if (section.empty())
@@ -31,7 +28,25 @@ const toml::table *table_for_section(const toml::table &root, const std::string 
     return root[section].as_table();
     return nullptr;
 }
+
 } // namespace
+
+
+File::File(const std::string &path, detail::Manager *mgr)
+: Logger("File"), m_manager(mgr ? mgr : Manager::the()), m_config(m_manager->registerPath(path))
+{}
+
+File::~File() = default;
+
+bool File::exists() const
+{
+    return m_config.exists;
+}
+
+const std::string File::pathname() const
+{
+    return m_config.base + sep + m_config.path + sep + ".toml";
+}
 
 std::vector<std::string> File::sections()
 {

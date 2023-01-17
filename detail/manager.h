@@ -30,7 +30,8 @@ struct Config {
     std::string path; // path fragment
     std::string base; // base directory
     toml::table config;
-    bool modified;
+    bool exists = false;
+    bool modified = false;
 };
 
 struct ConfigKey {

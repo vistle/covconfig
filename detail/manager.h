@@ -77,6 +77,7 @@ private:
     ~Manager();
     bool setWorkspaceBridge(Bridge *bridge);
     bool removeWorkspaceBridge(Bridge *bridge);
+    void sendAllEntries();
     void setPrefix(const std::string &dir);
     void acquire();
     bool release();

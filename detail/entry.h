@@ -20,6 +20,8 @@ namespace CONFIG_NAMESPACE {
 #endif
 
 namespace config {
+
+class ConfigBase;
 namespace detail {
 
 struct Config;
@@ -56,6 +58,8 @@ public:
     void removeObserver(Observer *o);
     void setModified();
     void store();
+
+    virtual std::unique_ptr<ConfigBase> create() = 0;
 
 protected:
     Manager *m_manager = nullptr;
@@ -97,6 +101,7 @@ public:
 
     ValueEntry(Manager *mgr, const std::string &path, const std::string &section, const std::string &name, Flag flags);
     ~ValueEntry() override;
+    std::unique_ptr<ConfigBase> create() override;
     void assign() override;
 
     using Base::operator=;
@@ -112,6 +117,7 @@ public:
 
     ArrayEntry(Manager *mgr, const std::string &path, const std::string &section, const std::string &name, Flag flags);
     ~ArrayEntry() override;
+    std::unique_ptr<ConfigBase> create() override;
     void assign() override;
 
     using Base::operator=;

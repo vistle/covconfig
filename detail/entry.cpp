@@ -148,6 +148,12 @@ ValueEntry<V>::~ValueEntry()
 }
 
 template<class V>
+std::unique_ptr<ConfigBase> ValueEntry<V>::create()
+{
+    return std::unique_ptr<ConfigBase>(new Value<V>(this));
+}
+
+template<class V>
 const V &EntryBase<V>::value() const
 {
     return m_value;
@@ -262,6 +268,12 @@ template<class V>
 ArrayEntry<V>::~ArrayEntry()
 {
     this->store();
+}
+
+template<class V>
+std::unique_ptr<ConfigBase> ArrayEntry<V>::create()
+{
+    return std::unique_ptr<ConfigBase>(new Array<V>(this));
 }
 
 template<class V>

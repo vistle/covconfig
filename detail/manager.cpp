@@ -65,6 +65,8 @@ bool Manager::setWorkspaceBridge(Bridge *bridge)
     if (m_bridge)
         return false;
     m_bridge = bridge;
+    if (m_bridge)
+        sendAllEntries();
     return true;
 }
 
@@ -76,6 +78,15 @@ bool Manager::removeWorkspaceBridge(Bridge *bridge)
     return true;
 }
 
+void Manager::sendAllEntries()
+{
+    if (!m_bridge)
+        return;
+    for (const auto &e: m_entries) {
+        auto cb = e.second->create();
+        sendToWorkspace(cb.get());
+    }
+}
 
 void Manager::reconfigure()
 {

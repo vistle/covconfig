@@ -18,19 +18,19 @@
 #endif
 
 #if defined(COVCONFIG_VISTLE)
-#if defined(vistle_covconfig_EXPORTS)
+#if defined(vistle_config_EXPORTS)
 #define COVEXPORT COV_EXPORT
 #else
 #define COVEXPORT COV_IMPORT
 #endif
 #elif defined(COVCONFIG_OPENCOVER)
-#if defined(coOpenCovConfig_EXPORTS)
+#if defined(coOpenConfig_EXPORTS)
 #define COVEXPORT COV_EXPORT
 #else
 #define COVEXPORT COV_IMPORT
 #endif
 #elif defined(COVCONFIG_COVISE)
-#if defined(coCovConfig_EXPORTS)
+#if defined(coConfigNew_EXPORTS)
 #define COVEXPORT COV_EXPORT
 #else
 #define COVEXPORT COV_IMPORT

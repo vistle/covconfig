@@ -170,10 +170,10 @@ void Array<V>::setUpdater(std::function<void()> func)
 }
 
 
-template class Array<bool>;
-template class Array<int64_t>;
-template class Array<double>;
-template class Array<std::string>;
+template class COVEXPORT Array<bool>;
+template class COVEXPORT Array<int64_t>;
+template class COVEXPORT Array<double>;
+template class COVEXPORT Array<std::string>;
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

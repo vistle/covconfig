@@ -37,7 +37,7 @@ class Array: public ConfigBase {
 public:
     /// notify configuration subsystem when array members have been modified
     /** proxy class for notifying configuration subsystem of changes to array members. Not meant to be stored by the caller of \ref Array::operator[] */
-    class ValueProxy {
+    class COVEXPORT ValueProxy {
         friend Array;
 
     public:

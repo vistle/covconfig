@@ -49,7 +49,7 @@ public:
         ~ValueProxy();
 
     private:
-        ValueProxy(Array<V> *array, size_t index): array(array), index(index) {}
+        ValueProxy(Array<V> *array, size_t index);
         Array *array = nullptr;
         size_t index = 0;
     };

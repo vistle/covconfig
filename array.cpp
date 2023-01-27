@@ -82,7 +82,7 @@ template<class V>
 typename Array<V>::ValueProxy &Array<V>::ValueProxy::operator=(const V &value)
 {
     if (array) {
-        if (array->entry()->at(index) != value) {
+        if (V(array->entry()->at(index)) != value) {
             array->entry()->at(index) = value;
             array->entry()->setModified();
         }
@@ -104,6 +104,10 @@ typename Array<V>::ValueProxy Array<V>::operator[](size_t index)
 }
 
 template<class V>
+Array<V>::ValueProxy::ValueProxy(Array<V> *array, size_t index): array(array), index(index)
+{}
+
+template<class V>
 Array<V>::ValueProxy::~ValueProxy()
 {
     array->entry()->store();
@@ -115,7 +119,7 @@ Array<V> &Array<V>::operator=(const std::vector<V> &val)
     if (size() != val.size())
         resize(val.size());
     for (size_t c = 0; c < size(); ++c) {
-        if (entry()->at(c) != val[c]) {
+        if (V(entry()->at(c)) != val[c]) {
             entry()->at(c) = val[c];
             entry()->setModified();
         }

@@ -56,11 +56,12 @@ private:
     detail::ValueEntry<V> *entry() const; ///< access storage of value
     std::function<void(const V &)> m_updater; ///< change listener
 };
-
+#ifndef WIN32
 extern template class COVEXPORT Value<bool>; ///< instantiated type
 extern template class COVEXPORT Value<int64_t>; ///< instantiated type
 extern template class COVEXPORT Value<double>; ///< instantiated type
 extern template class COVEXPORT Value<std::string>; ///< instantiated type
+#endif
 }
 #ifdef CONFIG_NAMESPACE
 template<class V>

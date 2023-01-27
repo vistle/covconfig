@@ -81,11 +81,12 @@ private:
     detail::ArrayEntry<V> *entry() const; ///< access storage of values
     std::function<void()> m_updater; ///< change listener
 };
-
+#ifndef WIN32
 extern template class COVEXPORT Array<bool>; ///< instantiated type
 extern template class COVEXPORT Array<int64_t>; ///< instantiated type
 extern template class COVEXPORT Array<double>; ///< instantiated type
 extern template class COVEXPORT Array<std::string>; ///< instantiated type
+#endif
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

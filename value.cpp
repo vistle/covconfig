@@ -97,10 +97,10 @@ void Value<V>::setUpdater(std::function<void(const V &)> func)
 }
 
 
-template class Value<bool>;
-template class Value<int64_t>;
-template class Value<double>;
-template class Value<std::string>;
+template class COVEXPORT Value<bool>;
+template class COVEXPORT Value<int64_t>;
+template class COVEXPORT Value<double>;
+template class COVEXPORT Value<std::string>;
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

@@ -270,6 +270,9 @@ bool Manager::save(const std::string &path)
     if (it == m_configs.end()) {
         return false;
     }
+    if (it->second.config.size() == 0) { // do not save empty config files
+        return false;
+    }
 
     if (m_userPath.empty()) {
         error("save") << "cannot save configuration " << path << ": no save path" << std::endl;
@@ -281,6 +284,7 @@ bool Manager::save(const std::string &path)
     try {
         std::ofstream f(temp);
         f << it->second.config;
+        f.close();
     } catch (std::exception &ex) {
         error("save") << "failed to save config to " << temp << ": " << ex.what() << std::endl;
         return false;

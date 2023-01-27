@@ -270,16 +270,17 @@ bool Manager::save(const std::string &path)
     if (it == m_configs.end()) {
         return false;
     }
-    if (it->second.config.size() == 0) { // do not save empty config files
-        return false;
-    }
-
     if (m_userPath.empty()) {
         error("save") << "cannot save configuration " << path << ": no save path" << std::endl;
         return false;
     }
 
     std::string pathname = m_userPath + sep + path + ".toml";
+    if (it->second.config.size() == 0) { // do not save empty config files
+        std::remove(pathname.c_str());
+        return true;
+    }
+
     std::string temp = pathname + ".new";
     try {
         std::ofstream f(temp);

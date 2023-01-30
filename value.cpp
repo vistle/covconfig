@@ -96,7 +96,10 @@ void Value<V>::setUpdater(std::function<void(const V &)> func)
     update();
 }
 
-
+#ifndef WIN32
+#undef COVEXPORT
+#define COVEXPORT
+#endif
 template class COVEXPORT Value<bool>;
 template class COVEXPORT Value<int64_t>;
 template class COVEXPORT Value<double>;

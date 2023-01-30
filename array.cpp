@@ -170,6 +170,10 @@ void Array<V>::setUpdater(std::function<void()> func)
 }
 
 
+#ifndef WIN32
+#undef COVEXPORT
+#define COVEXPORT
+#endif
 template class COVEXPORT Array<bool>;
 template class COVEXPORT Array<int64_t>;
 template class COVEXPORT Array<double>;

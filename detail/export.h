@@ -11,30 +11,19 @@
 
 #elif defined(__GNUC__) && __GNUC__ >= 4
 #define COV_EXPORT __attribute__((visibility("default")))
-#define COV_IMPORT V_EXPORT
+#define COV_IMPORT COV_EXPORT
 #else
 #define COV_IMPORT
 #define COV_EXPORT
 #endif
 
-#if defined(COVCONFIG_VISTLE)
+
 #if defined(vistle_config_EXPORTS)
 #define COVEXPORT COV_EXPORT
-#else
-#define COVEXPORT COV_IMPORT
-#endif
-#elif defined(COVCONFIG_OPENCOVER)
-#if defined(coOpenConfig_EXPORTS)
+#elif defined(coOpenConfig_EXPORTS)
+#define COVEXPORT COV_EXPORT
+#elif defined(coConfigNew_EXPORTS)
 #define COVEXPORT COV_EXPORT
 #else
 #define COVEXPORT COV_IMPORT
-#endif
-#elif defined(COVCONFIG_COVISE)
-#if defined(coConfigNew_EXPORTS)
-#define COVEXPORT COV_EXPORT
-#else
-#define COVEXPORT COV_IMPORT
-#endif
-#else
-#define COVEXPORT
 #endif

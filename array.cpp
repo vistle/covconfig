@@ -81,13 +81,12 @@ V Array<V>::operator[](size_t index) const
 template<class V>
 typename Array<V>::ValueProxy &Array<V>::ValueProxy::operator=(const V &value)
 {
+    assert(array);
     if (array) {
         if (V(array->entry()->at(index)) != value) {
             array->entry()->at(index) = value;
             array->entry()->setModified();
         }
-    } else {
-        array->error("ValueProxy[]") << "array is null when trying to set index " << index;
     }
     return *this;
 }

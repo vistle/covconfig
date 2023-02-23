@@ -6,6 +6,8 @@
 #include "detail/manager.h"
 #include "detail/output.h"
 
+#include <cassert>
+
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
 #endif

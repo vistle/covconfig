@@ -162,18 +162,18 @@ bool Manager::release()
 Manager::~Manager()
 {
     if (this == instance) {
-        debug() << "destroying DEFAULT INSTANCE" << std::endl;
+        debug("~") << "destroying DEFAULT INSTANCE" << std::endl;
         instance = nullptr;
     } else {
-        debug() << "destroying" << std::endl;
+        debug("~") << "destroying" << std::endl;
     }
 
-#if 0
-    info() << "saving config" << std::endl;
     for (auto &c: m_configs) {
-        save(c.first);
+        if (c.second.autosave) {
+            debug("~") << "saving " << c.first << std::endl;
+            save(c.first);
+        }
     }
-#endif
 
     for (auto &e: m_entries) {
         delete e.second;
@@ -278,6 +278,7 @@ bool Manager::save(const std::string &path)
     std::string pathname = m_userPath + sep + path + ".toml";
     if (it->second.config.size() == 0) { // do not save empty config files
         std::remove(pathname.c_str());
+        it->second.modified = false;
         return true;
     }
 

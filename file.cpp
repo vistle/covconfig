@@ -53,6 +53,16 @@ bool File::save()
     return m_manager->save(m_config.path);
 }
 
+void File::enableSaveOnExit(bool enable)
+{
+    m_config.autosave = enable;
+}
+
+bool File::isSaveOnExit() const
+{
+    return m_config.autosave;
+}
+
 std::vector<std::string> File::sections()
 {
     return subsections("");

@@ -29,9 +29,10 @@ namespace detail {
 struct Config {
     std::string path; // path fragment
     std::string base; // base directory
-    toml::table config;
-    bool exists = false;
+    toml::table config; // value storage
+    bool exists = false; // does file exist?
     bool modified = false;
+    bool autosave = false; // save on exit?
 };
 
 struct ConfigKey {

@@ -296,6 +296,8 @@ bool Manager::save(const std::string &path)
         return false;
     }
 
+    it->second.modified = false;
+
     return true;
 }
 

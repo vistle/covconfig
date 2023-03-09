@@ -48,6 +48,11 @@ const std::string File::pathname() const
     return m_config.base + sep + m_config.path + sep + ".toml";
 }
 
+bool File::save()
+{
+    return m_manager->save(m_config.path);
+}
+
 std::vector<std::string> File::sections()
 {
     return subsections("");

@@ -36,6 +36,7 @@ public:
 
     bool exists() const;
     const std::string pathname() const;
+    bool save(); ///< request to store current configuration to disk
 
     std::vector<std::string> sections(); ///< all top-level sections
     std::vector<std::string> subsections(const std::string &section); ///< all subsections of a (sub-)section

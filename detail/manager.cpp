@@ -16,6 +16,9 @@
 #include <cassert>
 
 #ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#define PATH_MAX MAX_PATH
 #else
 #include <unistd.h>
 #endif
@@ -96,11 +99,13 @@ void Manager::reconfigure()
     const std::string cfg = "covconfig";
 #endif
 
-#ifdef _WIN32
-#else
     // current directory
     std::vector<char> cwd(PATH_MAX);
+#ifdef _WIN32
+    if (const char *wd = _getcwd(cwd.data(), cwd.size())) {
+#else
     if (const char *wd = getcwd(cwd.data(), cwd.size())) {
+#endif
         m_path.push_back(wd + sep + "." + cfg);
     } else {
         error() << "cannot obtain current directory: " << strerror(errno) << std::endl;
@@ -138,7 +143,6 @@ void Manager::reconfigure()
             begin = begin + 1;
         }
     }
-#endif
 }
 
 void Manager::acquire()

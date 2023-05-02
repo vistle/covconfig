@@ -37,7 +37,7 @@ public:
     bool exists() const; ///< query if path has existed when configuration was loaded
     std::string pathname() const; ///< actual path that was/would have been loaded
     bool save(); ///< request to store current configuration to disk
-    void enableSaveOnExit(bool enable); ///< request to save the current values when Manager is destroyed (i.e. application quits)
+    void setSaveOnExit(bool enable); ///< request to save the current values when Manager is destroyed (i.e. application quits)
     bool isSaveOnExit() const; ///< query whether file will be saved automatically on exit
 
     std::vector<std::string> sections(); ///< all top-level sections

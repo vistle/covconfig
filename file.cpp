@@ -53,7 +53,7 @@ bool File::save()
     return m_manager->save(m_config.path);
 }
 
-void File::enableSaveOnExit(bool enable)
+void File::setSaveOnExit(bool enable)
 {
     m_config.autosave = enable;
 }

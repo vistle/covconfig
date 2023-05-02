@@ -43,7 +43,7 @@ bool File::exists() const
     return m_config.exists;
 }
 
-const std::string File::pathname() const
+std::string File::pathname() const
 {
     return m_config.base + sep + m_config.path + sep + ".toml";
 }

@@ -79,6 +79,7 @@ private:
     bool setWorkspaceBridge(Bridge *bridge);
     bool removeWorkspaceBridge(Bridge *bridge);
     void sendAllEntries();
+    void setRank(int rank);
     void setPrefix(const std::string &dir);
     void acquire();
     bool release();
@@ -86,7 +87,7 @@ private:
 
     std::string m_hostname;
     const std::string m_cluster;
-    const int m_rank = -1;
+    int m_rank = -1;
 
     int m_useCount = 0;
 

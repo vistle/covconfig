@@ -192,6 +192,19 @@ void Manager::setPrefix(const std::string &dir)
     reconfigure();
 }
 
+void Manager::setRank(int rank)
+{
+    debug("setRank") << "rank is " << m_rank << ", trying to set rank to " << rank << std::endl;
+    if (m_rank == rank)
+        return;
+    if (m_rank != -1) {
+        error("setRank") << "rank is << " << m_rank << ", cannot change to " << rank << std::endl;
+        abort();
+    }
+    m_rank = rank;
+    reconfigure();
+}
+
 int Manager::rank() const
 {
     return m_rank;

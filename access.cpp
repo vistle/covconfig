@@ -31,13 +31,19 @@ Access::Access(const std::string &host, const std::string &cluster, int rank): L
         assert(Manager::the());
         m_manager = Manager::the();
         if (host != m_manager->hostname() || cluster != m_manager->cluster() || rank != m_manager->rank()) {
-            error() << "cannot configure for host=" << host << ", cluster=" << cluster << ":" << rank
-                    << ", already configured for " << m_manager->hostname() << " in " << m_manager->cluster() << ":"
-                    << m_manager->rank() << std::endl;
-            assert(m_manager->hostname() == host);
-            assert(m_manager->cluster() == cluster);
-            assert(m_manager->rank() == rank);
-            abort();
+            if (rank == -1) {
+                debug() << "not changing rank " << m_manager->rank() << " to " << rank << std::endl;
+            } else if (m_manager->rank() == -1) {
+                m_manager->setRank(rank);
+            } else {
+                error() << "cannot configure for host=" << host << ", cluster=" << cluster << ":" << rank
+                        << ", already configured for " << m_manager->hostname() << " in " << m_manager->cluster() << ":"
+                        << m_manager->rank() << std::endl;
+                assert(m_manager->hostname() == host);
+                assert(m_manager->cluster() == cluster);
+                assert(m_manager->rank() == rank);
+                abort();
+            }
         }
     } else {
         m_manager = new Manager(host, cluster, rank);

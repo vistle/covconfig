@@ -31,8 +31,11 @@ namespace config {
 namespace detail {
 
 static Manager *instance = nullptr;
-
+#ifdef _WIN32
+static const std::string sep("\\");
+#else
 static const std::string sep("/");
+#endif
 
 Manager *Manager::the()
 {
@@ -129,6 +132,8 @@ void Manager::reconfigure()
         m_userPath = xdg_ch + sep + cfg;
     } else if (const char *home = getenv("HOME")) {
         m_userPath = home + sep + ".config" + sep + cfg;
+    } else if (const char *home = getenv("APPDATA")) {
+        m_userPath = home + sep + cfg;
     } else {
         error() << "cannot obtain HOME environment variable" << std::endl;
     }
@@ -322,12 +327,15 @@ bool Manager::save(const std::string &path)
     try {
         std::ofstream f(temp);
         f << it->second.config;
-        f.close();
     } catch (std::exception &ex) {
         error("save") << "failed to save config to " << temp << ": " << ex.what() << std::endl;
         return false;
     }
 
+    std::string backup = pathname + ".backup";
+    std::remove(backup.c_str());
+    std::rename(pathname.c_str(), backup.c_str());
+    std::remove(pathname.c_str());
     if (std::rename(temp.c_str(), pathname.c_str()) != 0) {
         error("save") << "failed to move updated config to " << pathname << std::endl;
         return false;

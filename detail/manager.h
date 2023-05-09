@@ -8,6 +8,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <functional>
 
 #include "entry.h"
 #include "base.h"

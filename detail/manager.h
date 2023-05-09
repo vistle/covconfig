@@ -73,6 +73,8 @@ public:
 
     bool sendToWorkspace(const ConfigBase *value);
 
+    void handleError();
+
 private:
     Manager(const std::string &host, const std::string &cluster = std::string(), int rank = -1);
     ~Manager();
@@ -81,6 +83,7 @@ private:
     void sendAllEntries();
     void setRank(int rank);
     void setPrefix(const std::string &dir);
+    void setErrorHandler(std::function<void()> handler);
     void acquire();
     bool release();
     void reconfigure();
@@ -99,6 +102,8 @@ private:
     typedef ConfigKey Key;
     std::map<Key, Entry *> m_entries;
     Bridge *m_bridge = nullptr;
+
+    std::function<void()> m_errorHandler;
 };
 
 extern template ValueEntry<bool> *Manager::getValue(const std::string &, const std::string &, const std::string &,

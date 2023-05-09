@@ -175,7 +175,7 @@ bool EntryBase<V>::setOrCheckDefaultValue(const V &value)
     } else if (value != m_defaultValue) {
         error("setOrCheckDefaultValue") << "differing default values for " << key() << ": " << defaultValue()
                                         << " is registered, request is " << value << std::endl;
-        abort();
+        m_manager->handleError();
         return false;
     }
 

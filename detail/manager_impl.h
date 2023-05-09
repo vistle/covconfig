@@ -30,7 +30,7 @@ ValueEntry<V> *Manager::getValue(const std::string &path, const std::string &sec
     auto ent = dynamic_cast<ValueEntry<V> *>(it->second);
     if (!ent) {
         error("getValue") << key << " already registered with a different type" << std::endl;
-        abort();
+        handleError();
     }
     debug("getValue") << key << " found, existing value: " << ent->value() << ", default: " << ent->defaultValue()
                       << std::endl;
@@ -53,7 +53,7 @@ ArrayEntry<V> *Manager::getArray(const std::string &path, const std::string &sec
     auto ent = dynamic_cast<ArrayEntry<V> *>(it->second);
     if (!ent) {
         error("getArray") << key << " already registered with a different type" << std::endl;
-        abort();
+        handleError();
     }
     debug("getArray") << key << " found, existing array: " << ent->value() << ", default: " << ent->defaultValue()
                       << std::endl;

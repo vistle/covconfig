@@ -53,6 +53,12 @@ bool Manager::exists()
 Manager::Manager(const std::string &host, const std::string &cluster, int rank)
 : Logger("Manager"), m_hostname(host), m_cluster(cluster), m_rank(rank)
 {
+    setErrorHandler([this](){
+            if (!getenv("COVCONFIG_IGNORE_ERRORS")) {
+            error("default error handler") << "terminating - set COVCONFIG_IGNORE_ERRORS to continue" << std::endl;
+            exit(1);
+            }
+            });
     if (instance) {
         debug() << "host=" << host << ", cluster=" << cluster << ", rank=" << rank
                 << ", not overwriting existing instance" << std::endl;
@@ -61,6 +67,14 @@ Manager::Manager(const std::string &host, const std::string &cluster, int rank)
         debug() << "host=" << host << ", cluster=" << cluster << ", rank=" << rank << ", NEW INSTANCE" << std::endl;
     }
     reconfigure();
+}
+
+void Manager::handleError()
+{
+    if (m_errorHandler)
+        m_errorHandler();
+    else
+        error("handleError") << "ignoring..." << std::endl;
 }
 
 bool Manager::setWorkspaceBridge(Bridge *bridge)
@@ -185,6 +199,11 @@ Manager::~Manager()
     m_entries.clear();
 }
 
+void Manager::setErrorHandler(std::function<void()> handler)
+{
+    m_errorHandler = handler;
+}
+
 void Manager::setPrefix(const std::string &dir)
 {
     m_installPrefix = dir;
@@ -199,7 +218,7 @@ void Manager::setRank(int rank)
         return;
     if (m_rank != -1) {
         error("setRank") << "rank is << " << m_rank << ", cannot change to " << rank << std::endl;
-        abort();
+        handleError();
     }
     m_rank = rank;
     reconfigure();
@@ -253,7 +272,7 @@ Config &Manager::registerPath(const std::string &path)
                     continue;
                 } else {
                     error("registerPath") << ex << std::endl;
-                    abort();
+                    handleError();
                     break;
                 }
             } catch (std::exception &ex) {

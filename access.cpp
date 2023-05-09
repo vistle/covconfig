@@ -42,7 +42,7 @@ Access::Access(const std::string &host, const std::string &cluster, int rank): L
                 assert(m_manager->hostname() == host);
                 assert(m_manager->cluster() == cluster);
                 assert(m_manager->rank() == rank);
-                abort();
+                m_manager->handleError();
             }
         }
     } else {
@@ -68,6 +68,10 @@ void Access::setPrefix(const std::string &dir)
 {
     assert(m_manager);
     m_manager->setPrefix(dir);
+}
+
+void Access::setErrorHandler(std::function<void()> handler)
+{
 }
 
 bool Access::setWorkspaceBridge(Bridge *bridge)

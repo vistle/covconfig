@@ -295,11 +295,17 @@ void ArrayEntry<V>::assign()
             return;
         }
     }
-    toml::array array;
-    for (auto &v: this->m_value) {
-        array.push_back(V(v));
+    if (this->m_defaultValueValid && this->m_value == this->m_defaultValue) {
+        tbl->erase(this->m_name);
+        this->debug("assign") << this->key() << ", " << this->m_value << " is default, erased from toml" << std::endl;
+    } else {
+        toml::array array;
+        for (auto &v: this->m_value) {
+            array.push_back(V(v));
+        }
+        tbl->insert_or_assign(this->m_name, array);
+        this->debug("assign") << this->key() << " inserted/assigned " << this->m_value << " to toml" << std::endl;
     }
-    tbl->insert_or_assign(this->m_name, array);
     this->m_config.modified = true;
 }
 

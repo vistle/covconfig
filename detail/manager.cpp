@@ -246,18 +246,18 @@ Config &Manager::registerPath(const std::string &path)
             toml::table tbl;
             try {
                 tbl = toml::parse_file(pathname);
-                debug("registerEntry") << pathname << " OK" << std::endl;
+                debug("registerPath") << pathname << " OK" << std::endl;
             } catch (toml::parse_error &ex) {
                 if (ex.what() == std::string("File could not be opened for reading")) {
-                    debug("registerEntry") << "could not parse " << pathname << ": " << ex.what() << std::endl;
+                    debug("registerPath") << ex << std::endl;
                     continue;
                 } else {
-                    error("registerEntry") << "could not parse " << pathname << ": " << ex.what() << std::endl;
+                    error("registerPath") << ex << std::endl;
                     abort();
                     break;
                 }
             } catch (std::exception &ex) {
-                info("registerEntry") << "unhandled exception while parsing " << pathname << ": " << ex.what()
+                info("registerPath") << "unhandled exception while parsing " << pathname << ": " << ex.what()
                                       << std::endl;
                 continue;
             }

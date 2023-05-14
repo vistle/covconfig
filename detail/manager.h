@@ -90,7 +90,7 @@ private:
     void reconfigure();
 
     std::string m_hostname;
-    const std::string m_cluster;
+    std::string m_cluster;
     int m_rank = -1;
 
     int m_useCount = 0;

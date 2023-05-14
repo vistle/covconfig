@@ -69,6 +69,14 @@ Manager::Manager(const std::string &host, const std::string &cluster, int rank)
         instance = this;
         debug() << "host=" << host << ", cluster=" << cluster << ", rank=" << rank << ", NEW INSTANCE" << std::endl;
     }
+    if (auto host = getenv("COVCONFIG_HOST")) {
+        m_hostname = host;
+        debug() << "overriding host from environment to=" << host << std::endl;
+    }
+    if (auto cluster = getenv("COVCONFIG_CLUSTER")) {
+        m_cluster = cluster;
+        debug() << "overriding cluster from environment to=" << cluster << std::endl;
+    }
     reconfigure();
 }
 
@@ -115,6 +123,11 @@ void Manager::reconfigure()
 #else
     const std::string cfg = "covconfig";
 #endif
+
+    if (auto configname = getenv("COVCONFIG")) {
+        m_path.push_back(configname);
+        debug() << "setting first search path from COVCONFIG environment to " << configname << std::endl;
+    }
 
     // current directory
     std::vector<char> cwd(PATH_MAX);

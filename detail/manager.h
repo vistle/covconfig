@@ -88,6 +88,7 @@ private:
     void acquire();
     bool release();
     void reconfigure();
+    bool saveAllAutosave();
 
     std::string m_hostname;
     std::string m_cluster;

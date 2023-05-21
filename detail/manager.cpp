@@ -205,12 +205,7 @@ Manager::~Manager()
         debug("~") << "destroying" << std::endl;
     }
 
-    for (auto &c: m_configs) {
-        if (c.second.autosave) {
-            debug("~") << "saving " << c.first << std::endl;
-            save(c.first);
-        }
-    }
+    saveAllAutosave();
 
     for (auto &e: m_entries) {
         delete e.second;
@@ -361,6 +356,20 @@ bool Manager::save(const std::string &path)
     it->second.modified = false;
 
     return true;
+}
+
+bool Manager::saveAllAutosave()
+{
+    bool ok = true;
+    for (auto &c: m_configs) {
+        if (c.second.autosave) {
+            debug("~") << "saving " << c.first << std::endl;
+            if (!save(c.first)) {
+                ok = false;
+            }
+        }
+    }
+    return ok;
 }
 
 std::ostream &operator<<(std::ostream &os, const ConfigKey &key)

@@ -55,7 +55,8 @@ public:
     void setPrefix(const std::string &dir); ///< set software installation prefix as additional search path
     bool setWorkspaceBridge(Bridge *bridge); ///< specify \ref Bridge for accessing per-model configuration values
     bool removeWorkspaceBridge(Bridge *bridge); ///< remove per-model configuration \ref Bridge
-    void setErrorHandler(std::function<void()> handler = nullptr); ///< what to do in case of errors, initially calls exit 
+    void setErrorHandler(std::function<void()> handler = nullptr); ///< what to do in case of errors, initially calls exit
+    bool save(); ///< save changes in all files that should be saved on exit
 
     std::unique_ptr<File> file(const std::string &path) const; ///< get interface to a configuration file
 

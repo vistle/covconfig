@@ -94,6 +94,15 @@ bool Access::removeWorkspaceBridge(Bridge *bridge)
     return true;
 }
 
+bool Access::save()
+{
+    if (!m_manager) {
+        return false;
+    }
+
+    return m_manager->saveAllAutosave();
+}
+
 Access::~Access()
 {
     if (m_manager) {

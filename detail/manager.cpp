@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cassert>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -322,12 +323,15 @@ bool Manager::save(const std::string &path)
 {
     auto it = m_configs.find(path);
     if (it == m_configs.end()) {
+        error("save") << "cannot save configuration " << path << ": not found" << std::endl;
         return false;
     }
     if (m_userPath.empty()) {
         error("save") << "cannot save configuration " << path << ": no save path" << std::endl;
         return false;
     }
+
+    std::filesystem::create_directories(m_userPath);
 
     std::string pathname = m_userPath + sep + path + ".toml";
     if (it->second.config.size() == 0) { // do not save empty config files

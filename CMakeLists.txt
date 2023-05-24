@@ -13,3 +13,4 @@ include(covconfig.cmake)
 
 add_library(covconfig ${COVCONFIG_SOURCES} ${COVCONFIG_HEADERS})
 target_include_directories(covconfig PRIVATE ${COVCONFIG_PRIVATE_INCLUDES})
+target_link_libraries(covconfig PRIVATE ${COVCONFIG_PRIVATE_LIBRARIES})

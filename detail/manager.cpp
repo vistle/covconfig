@@ -111,6 +111,7 @@ void Manager::sendAllEntries()
 {
     if (!m_bridge)
         return;
+    std::lock_guard guard(m_mutex);
     for (const auto &e: m_entries) {
         auto cb = e.second->create();
         sendToWorkspace(cb.get());
@@ -255,6 +256,7 @@ const std::string &Manager::hostname() const
 
 Config &Manager::registerPath(const std::string &path)
 {
+    std::lock_guard guard(m_mutex);
     auto it = m_configs.find(path);
     if (it != m_configs.end()) {
         return it->second;
@@ -294,17 +296,19 @@ Config &Manager::registerPath(const std::string &path)
                                       << std::endl;
                 continue;
             }
-            Config config{path, dir, tbl};
+            auto &config = m_configs[path];
+            config.path = path;
+            config.base = dir;
+            config.config = tbl;
             config.exists = true;
-            it = m_configs.emplace(path, config).first;
-            return it->second;
+            return config;
         }
     }
 
-    toml::table tbl;
-    Config config{path, m_userPath, tbl};
-    it = m_configs.emplace(path, config).first;
-    return it->second;
+    auto &config = m_configs[path];
+    config.path = path;
+    config.base = m_userPath;
+    return config;
 }
 
 bool Manager::sendToWorkspace(const ConfigBase *entry)
@@ -316,11 +320,13 @@ bool Manager::sendToWorkspace(const ConfigBase *entry)
 
 bool Manager::save(const std::string &path)
 {
+    std::lock_guard guard(m_mutex);
     auto it = m_configs.find(path);
     if (it == m_configs.end()) {
         error("save") << "cannot save configuration " << path << ": not found" << std::endl;
         return false;
     }
+    std::lock_guard configGuard(it->second.mutex);
     if (m_userPath.empty()) {
         error("save") << "cannot save configuration " << path << ": no save path" << std::endl;
         return false;
@@ -360,8 +366,10 @@ bool Manager::save(const std::string &path)
 
 bool Manager::saveAllAutosave()
 {
+    std::lock_guard guard(m_mutex);
     bool ok = true;
     for (auto &c: m_configs) {
+        std::lock_guard configGuard(c.second.mutex);
         if (c.second.autosave) {
             debug("~") << "saving " << c.first << std::endl;
             if (!save(c.first)) {

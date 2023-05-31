@@ -34,6 +34,7 @@ struct Config {
     bool exists = false; // does file exist?
     bool modified = false;
     bool autosave = false; // save on exit?
+    std::mutex mutex;
 };
 
 struct ConfigKey {
@@ -94,6 +95,7 @@ private:
     std::string m_cluster;
     int m_rank = -1;
 
+    std::recursive_mutex m_mutex;
     int m_useCount = 0;
 
     std::string m_userPath; // where to write configuration

@@ -19,6 +19,7 @@ ValueEntry<V> *Manager::getValue(const std::string &path, const std::string &sec
                                  Flag flags)
 {
     Key key{path, section, name};
+    std::lock_guard guard(m_mutex);
     auto it = m_entries.find(key);
     if (it == m_entries.end()) {
         it = m_entries.emplace(key, new ValueEntry<V>(this, path, section, name, flags)).first;
@@ -42,6 +43,7 @@ ArrayEntry<V> *Manager::getArray(const std::string &path, const std::string &sec
                                  Flag flags)
 {
     Key key{path, section, name};
+    std::lock_guard guard(m_mutex);
     auto it = m_entries.find(key);
     if (it == m_entries.end()) {
         it = m_entries.emplace(key, new ArrayEntry<V>(this, path, section, name, flags)).first;

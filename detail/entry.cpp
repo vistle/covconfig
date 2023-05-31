@@ -6,6 +6,7 @@
 #include "output.h"
 #include "../value.h"
 #include "../array.h"
+#include <mutex>
 
 #include <toml++/toml.h>
 
@@ -285,6 +286,7 @@ void ArrayEntry<V>::assign()
         return;
     }
 
+    std::lock_guard guard(this->m_config.mutex);
     auto tbl = this->m_config.config[this->m_section].as_table();
     if (!tbl) {
         this->m_config.config.insert(this->m_section, toml::table());

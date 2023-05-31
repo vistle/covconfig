@@ -9,6 +9,7 @@
 #include <memory>
 #include <map>
 #include <functional>
+#include <mutex>
 
 #include "entry.h"
 #include "base.h"

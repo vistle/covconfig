@@ -320,6 +320,23 @@ bool Manager::sendToWorkspace(const ConfigBase *entry)
     return m_bridge->wasChanged(entry);
 }
 
+static void pruneEmptySections(toml::v3::table *tbl)
+{
+    if (!tbl)
+        return;
+    auto it = tbl->begin();
+    while (it != tbl->end()) {
+        toml::v3::table *t = it->second.as_table();
+        pruneEmptySections(t);
+        if (t && t->empty()) {
+            // it->second is a table and an empty one: prune
+            it = tbl->erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 bool Manager::save(const std::string &path)
 {
     std::lock_guard guard(m_mutex);
@@ -334,29 +351,39 @@ bool Manager::save(const std::string &path)
         return false;
     }
 
-    std::filesystem::create_directories(m_userPath);
+    auto &config = it->second.config;
+
+    pruneEmptySections(&config);
 
     std::string pathname = m_userPath + sep + path + ".toml";
-    if (it->second.config.size() == 0) { // do not save empty config files
-        std::remove(pathname.c_str());
-        it->second.modified = false;
-        return true;
-    }
-
-    std::string temp = pathname + ".new";
-    try {
-        std::ofstream f(temp);
-        f << it->second.config;
-    } catch (std::exception &ex) {
-        error("save") << "failed to save config to " << temp << ": " << ex.what() << std::endl;
+    std::string backup = pathname + ".backup";
+    if (config.empty()) { // do not save empty config files
+        if (std::remove(pathname.c_str()) == 0) {
+            it->second.modified = false;
+            return true;
+        }
         return false;
     }
 
-    std::string backup = pathname + ".backup";
-    std::remove(backup.c_str());
-    std::rename(pathname.c_str(), backup.c_str());
-    std::remove(pathname.c_str());
-    if (std::rename(temp.c_str(), pathname.c_str()) != 0) {
+    std::filesystem::create_directories(m_userPath);
+
+    std::string temp = pathname + ".new";
+    if (!config.empty()) {
+        try {
+            std::ofstream f(temp);
+            f << config;
+        } catch (std::exception &ex) {
+            error("save") << "failed to save config to " << temp << ": " << ex.what() << std::endl;
+            return false;
+        }
+    }
+
+    if (std::filesystem::exists(pathname)) {
+        std::remove(backup.c_str());
+        std::rename(pathname.c_str(), backup.c_str());
+        std::remove(pathname.c_str());
+    }
+    if (!config.empty() && std::rename(temp.c_str(), pathname.c_str()) != 0) {
         error("save") << "failed to move updated config to " << pathname << std::endl;
         return false;
     }

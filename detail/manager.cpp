@@ -371,7 +371,6 @@ bool Manager::saveAllAutosave()
     std::lock_guard guard(m_mutex);
     bool ok = true;
     for (auto &c: m_configs) {
-        std::lock_guard configGuard(c.second.mutex);
         if (c.second.autosave) {
             debug("~") << "saving " << c.first << std::endl;
             if (!save(c.first)) {

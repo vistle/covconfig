@@ -59,6 +59,8 @@ public:
     void setModified();
     void store();
 
+    Flag flags() const;
+
     virtual std::unique_ptr<ConfigBase> create() = 0;
 
 protected:

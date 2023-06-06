@@ -97,6 +97,11 @@ void Entry::store()
     }
 }
 
+Flag Entry::flags() const
+{
+    return m_flags;
+}
+
 void Entry::addObserver(Observer *o)
 {
     m_observers.emplace(o);

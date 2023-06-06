@@ -113,6 +113,8 @@ void Manager::sendAllEntries()
         return;
     std::lock_guard guard(m_mutex);
     for (const auto &e: m_entries) {
+        if (e.second->flags() != Flag::PerModel)
+            continue;
         auto cb = e.second->create();
         sendToWorkspace(cb.get());
     }

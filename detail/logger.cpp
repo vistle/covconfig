@@ -28,12 +28,10 @@ public:
 private:
     class NullBuffer: public std::streambuf {
     public:
-        int overflow(int c) { return c; }
+        int overflow(int c) { return traits_type::not_eof(c); }
     };
     NullBuffer m_streambuf;
 };
-
-static NullStream null;
 
 } // namespace
 
@@ -52,7 +50,9 @@ std::string Logger::prefix(const std::string &func) const
 
 std::ostream &Logger::getStream(int level) const
 {
+    static NullStream null;
     static int logLevel = -1;
+
     if (logLevel < 0) {
         if (const char *envLevel = getenv("COVCONFIG_DEBUG")) {
             if (envLevel[0] == '\0') {
@@ -72,8 +72,9 @@ std::ostream &Logger::getStream(int level) const
             logLevel = Info;
         }
     }
-    if (level > logLevel)
+    if (level > logLevel) {
         return null;
+    }
     return std::cerr;
 }
 

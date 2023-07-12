@@ -15,7 +15,7 @@
 #include <cstdio>
 #include <cassert>
 #include <filesystem>
-
+#include <string_view>
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
@@ -32,11 +32,14 @@ namespace config {
 namespace detail {
 
 static Manager *instance = nullptr;
-#ifdef _WIN32
-static const std::string sep("\\");
-#else
-static const std::string sep("/");
-#endif
+
+const std::string &sep()
+{
+    static std::string s;
+    if(s.empty())
+        s = "/";
+    return s;
+}
 
 Manager *Manager::the()
 {
@@ -140,17 +143,17 @@ void Manager::reconfigure()
 #else
     if (const char *wd = getcwd(cwd.data(), cwd.size())) {
 #endif
-        m_path.push_back(wd + sep + "." + cfg);
+        m_path.push_back(wd + sep() + "." + cfg);
     } else {
         error() << "cannot obtain current directory: " << strerror(errno) << std::endl;
     }
     // writable user config directory
     if (const char *xdg_ch = getenv("XDG_CONFIG_HOME")) {
-        m_userPath = xdg_ch + sep + cfg;
+        m_userPath = xdg_ch + sep() + cfg;
     } else if (const char *home = getenv("HOME")) {
-        m_userPath = home + sep + ".config" + sep + cfg;
+        m_userPath = home + sep() + ".config" + sep() + cfg;
     } else if (const char *home = getenv("APPDATA")) {
-        m_userPath = home + sep + cfg;
+        m_userPath = home + sep() + cfg;
     } else {
         error() << "cannot obtain HOME environment variable" << std::endl;
     }
@@ -159,7 +162,7 @@ void Manager::reconfigure()
     }
     // software installation directory
     if (!m_installPrefix.empty()) {
-        m_path.push_back(m_installPrefix + sep + "config");
+        m_path.push_back(m_installPrefix + sep() + "config");
     }
     // global system configuration
     std::string dirs("/etc/xdg");
@@ -172,7 +175,7 @@ void Manager::reconfigure()
         auto end = std::find(begin, dirs.end(), ':');
         std::string dir(begin, end);
         if (!dir.empty()) {
-            m_path.push_back(dir + sep + cfg);
+            m_path.push_back(dir + sep() + cfg);
         }
         begin = end;
         if (begin != dirs.end()) {
@@ -266,20 +269,20 @@ Config &Manager::registerPath(const std::string &path)
 
     std::vector<std::string> infixes;
     if (!m_cluster.empty() && !m_hostname.empty()) {
-        infixes.push_back(sep + "c_" + m_cluster + sep + "h_" + m_hostname);
+        infixes.push_back(sep() + "c_" + m_cluster + sep() + "h_" + m_hostname);
     }
     if (!m_hostname.empty()) {
-        infixes.push_back(sep + "h_" + m_hostname);
+        infixes.push_back(sep() + "h_" + m_hostname);
     }
     if (!m_cluster.empty()) {
-        infixes.push_back(sep + "c_" + m_cluster);
+        infixes.push_back(sep() + "c_" + m_cluster);
     }
     infixes.push_back("");
 
     for (const auto &infix: infixes) {
         for (const auto &basedir: m_path) {
             std::string dir = basedir + infix;
-            std::string pathname = dir + sep + path + ".toml";
+            std::string pathname = dir + sep() + path + ".toml";
             toml::table tbl;
             try {
                 tbl = toml::parse_file(pathname);
@@ -355,7 +358,7 @@ bool Manager::save(const std::string &path)
 
     pruneEmptySections(&config);
 
-    std::string pathname = m_userPath + sep + path + ".toml";
+    std::string pathname = m_userPath + sep() + path + ".toml";
     std::string backup = pathname + ".backup";
     if (config.empty()) { // do not save empty config files
         if (std::remove(pathname.c_str()) == 0) {

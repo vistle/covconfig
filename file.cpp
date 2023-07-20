@@ -45,7 +45,7 @@ bool File::exists() const
 
 std::string File::pathname() const
 {
-    return m_config.base + sep + m_config.path + sep + ".toml";
+    return m_config.base + sep + m_config.path + ".toml";
 }
 
 bool File::save()

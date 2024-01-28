@@ -24,6 +24,14 @@
 #include <unistd.h>
 #endif
 
+
+#ifdef CONFIG_CMRC_NAMESPACE
+#include <cmrc/cmrc.hpp>
+#include <sstream>
+
+CMRC_DECLARE(CONFIG_CMRC_NAMESPACE);
+#endif
+
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
 #endif
@@ -314,8 +322,24 @@ Config &Manager::registerPath(const std::string &path)
                 return m_configs[path];
         }
     }
+
+#ifdef CONFIG_CMRC_NAMESPACE
+    std::string pathname = path + ".toml";
+    try {
+        std::string dir;
+
+        auto fs = cmrc::CONFIG_CMRC_NAMESPACE::get_filesystem();
+        auto data = fs.open(pathname);
+        pathname = "CMRC:" + pathname;
+        std::string s(data.begin(), data.end());
+        std::stringstream file(s);
+        if (parse_config(file, dir, path, pathname)) {
+            return m_configs[path];
         }
+    } catch (std::system_error &ex) {
+        debug("registerPath") << "CMRC exception while reading " << pathname << ": " << ex.what() << std::endl;
     }
+#endif
 
     auto &config = m_configs[path];
     config.path = path;

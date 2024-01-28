@@ -279,34 +279,41 @@ Config &Manager::registerPath(const std::string &path)
     }
     infixes.push_back("");
 
+    auto parse_config([&](std::istream &file, const std::string &dir, const std::string &path,
+                          const std::string &pathname) -> bool {
+        toml::table tbl;
+        try {
+            tbl = toml::parse(file, pathname);
+            debug("registerPath") << pathname << " OK" << std::endl;
+        } catch (toml::parse_error &ex) {
+            error("registerPath") << ex << std::endl;
+            handleError();
+            return false;
+        } catch (std::exception &ex) {
+            info("registerPath") << "unhandled exception while parsing " << pathname << ": " << ex.what() << std::endl;
+            return false;
+        }
+        auto &config = m_configs[path];
+        config.path = path;
+        config.base = dir;
+        config.config = tbl;
+        config.exists = true;
+        return true;
+    });
+
     for (const auto &infix: infixes) {
         for (const auto &basedir: m_path) {
             std::string dir = basedir + infix;
             std::string pathname = dir + sep() + path + ".toml";
-            toml::table tbl;
-            try {
-                tbl = toml::parse_file(pathname);
-                debug("registerPath") << pathname << " OK" << std::endl;
-            } catch (toml::parse_error &ex) {
-                if (ex.what() == std::string("File could not be opened for reading")) {
-                    debug("registerPath") << ex << std::endl;
-                    continue;
-                } else {
-                    error("registerPath") << ex << std::endl;
-                    handleError();
-                    break;
-                }
-            } catch (std::exception &ex) {
-                info("registerPath") << "unhandled exception while parsing " << pathname << ": " << ex.what()
-                                      << std::endl;
+            std::ifstream file(pathname);
+            if (file.fail()) {
+                debug("registerPath") << pathname << " not found" << std::endl;
                 continue;
             }
-            auto &config = m_configs[path];
-            config.path = path;
-            config.base = dir;
-            config.config = tbl;
-            config.exists = true;
-            return config;
+            if (parse_config(file, dir, path, pathname))
+                return m_configs[path];
+        }
+    }
         }
     }
 

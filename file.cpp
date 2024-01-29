@@ -86,10 +86,14 @@ std::vector<std::string> File::entries(const std::string &section)
 {
     std::vector<std::string> entries;
     if (const auto *tbl = table_for_section(m_config.config, section)) {
+        debug("File::entries") << "entries for section " + section + ":" << std::endl;
         for (auto it = tbl->begin(); it != tbl->end(); ++it) {
+            debug("File::entries") << "   " + std::string(it->first.str()) << std::endl;
             if (!it->second.is_table())
                 entries.emplace_back(it->first.str());
         }
+    } else {
+        debug("no entries for section " + section);
     }
     return entries;
 }

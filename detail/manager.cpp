@@ -16,6 +16,7 @@
 #include <cassert>
 #include <filesystem>
 #include <string_view>
+#include <algorithm>
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>

@@ -46,6 +46,8 @@ public:
 /** Creating an instance of Access controls access to the configuration system via a Manager. This Manager is created and destroyed as needed. */
 class COVEXPORT Access: detail::Logger {
 public:
+    static bool isInitialized(); ///< check if Access has already been initialized with the non-default constructor
+
     Access(); ///< initiate access to configuration system with default search path only
     Access(const std::string &host, const std::string &cluster,
            int rank = -1); ///< initiate access to configuration, preferring configuration files for host and cluster

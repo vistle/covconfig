@@ -19,6 +19,11 @@ using namespace detail;
 
 Bridge::~Bridge() = default;
 
+bool Access::isInitialized()
+{
+    return Manager::exists();
+}
+
 Access::Access(): Logger("Access")
 {
     m_manager = detail::Manager::the();

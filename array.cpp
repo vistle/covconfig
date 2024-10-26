@@ -143,8 +143,12 @@ template<class V>
 std::vector<V> Array<V>::defaultValue() const
 {
     std::vector<V> vec(size());
-    for (size_t c = 0; c < size(); ++c) {
-        vec[c] = entry()->defaultValue().at(c);
+    for (size_t c = 0; c < size(); ++c)
+    {
+        if (c < entry()->defaultValue().size())
+        {
+            vec[c] = entry()->defaultValue().at(c);
+        }
     }
     return vec;
 }

@@ -142,14 +142,9 @@ std::vector<V> Array<V>::value() const
 template<class V>
 std::vector<V> Array<V>::defaultValue() const
 {
-    std::vector<V> vec(size());
-    for (size_t c = 0; c < size(); ++c)
-    {
-        if (c < entry()->defaultValue().size())
-        {
-            vec[c] = entry()->defaultValue().at(c);
-        }
-    }
+    auto &d = entry()->defaultValue();
+    std::vector<V> vec(d.size());
+    std::copy(d.begin(), d.end(), vec.begin());
     return vec;
 }
 

@@ -350,8 +350,14 @@ Config &Manager::registerPath(const std::string &path)
 
 bool Manager::sendToWorkspace(const ConfigBase *entry)
 {
-    if (!m_bridge)
-        return false;
+    if (!m_bridge) {
+        if (!m_noWorkspaceWarning) {
+            warn("sendToWorkspace") << "cannot save " << entry->name() << ", no bridge registered"
+            << " - this message will not be repeated for other entries" << std::endl;
+            m_noWorkspaceWarning = true;
+        }
+        return true;
+    }
     return m_bridge->wasChanged(entry);
 }
 

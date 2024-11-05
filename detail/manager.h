@@ -109,6 +109,7 @@ private:
     Bridge *m_bridge = nullptr;
 
     std::function<void()> m_errorHandler;
+    bool m_noWorkspaceWarning = false;
 };
 
 extern template ValueEntry<bool> *Manager::getValue(const std::string &, const std::string &, const std::string &,

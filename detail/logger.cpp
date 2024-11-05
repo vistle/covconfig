@@ -43,17 +43,9 @@ Logger::~Logger() = default;
 
 std::string Logger::prefix(const std::string &func) const
 {
-#ifdef CONFIG_NAMESPACE
-#define COV_STR(X) #X
-#define COV_PREF COV_STR(CONFIG_NAMESPACE) "::"
-#else
-#define COV_PREF ""
-#endif
     if (func.empty())
-        return COV_PREF + m_name + ": ";
-    return COV_PREF + m_name + "::" + func + ": ";
-#undef COV_PREF
-#undef COV_STR
+        return m_name + ": ";
+    return m_name + "::" + func + ": ";
 }
 
 std::ostream &Logger::getStream(int level) const

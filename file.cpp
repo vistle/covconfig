@@ -99,14 +99,14 @@ std::vector<std::string> File::entries(const std::string &section)
 }
 
 template<class V>
-std::unique_ptr<Value<V>> File::value(const std::string &section, const std::string &name)
+ValuePtr<V> File::value(const std::string &section, const std::string &name)
 {
     const auto &path = m_config.path;
     return std::make_unique<Value<V>>(path, section, name, m_manager);
 }
 
 template<class V>
-std::unique_ptr<Value<V>> File::value(const std::string &section, const std::string &name, const V &def, Flag flags)
+ValuePtr<V> File::value(const std::string &section, const std::string &name, const V &def, Flag flags)
 {
     const auto &path = m_config.path;
     return std::make_unique<Value<V>>(path, section, name, def, m_manager, flags);
@@ -128,10 +128,13 @@ std::unique_ptr<Array<V>> File::array(const std::string &section, const std::str
 }
 
 
-template std::unique_ptr<Value<bool>> COVEXPORT File::value(const std::string &section, const std::string &name);
-template std::unique_ptr<Value<int64_t>> COVEXPORT File::value(const std::string &section, const std::string &name);
-template std::unique_ptr<Value<double>> COVEXPORT File::value(const std::string &section, const std::string &name);
-template std::unique_ptr<Value<std::string>> COVEXPORT File::value(const std::string &section, const std::string &name);
+template std::unique_ptr<Value<bool>> COVEXPORT File::value<bool>(const std::string &section, const std::string &name);
+template std::unique_ptr<Value<int64_t>> COVEXPORT File::value<int64_t>(const std::string &section,
+                                                                        const std::string &name);
+template std::unique_ptr<Value<double>> COVEXPORT File::value<double>(const std::string &section,
+                                                                      const std::string &name);
+template std::unique_ptr<Value<std::string>> COVEXPORT File::value<std::string>(const std::string &section,
+                                                                                const std::string &name);
 template std::unique_ptr<Value<bool>> COVEXPORT File::value(const std::string &section, const std::string &name,
                                                             const bool &def, Flag flags);
 template std::unique_ptr<Value<int64_t>> COVEXPORT File::value(const std::string &section, const std::string &name,

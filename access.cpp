@@ -76,8 +76,7 @@ void Access::setPrefix(const std::string &dir)
 }
 
 void Access::setErrorHandler(std::function<void()> handler)
-{
-}
+{}
 
 bool Access::setWorkspaceBridge(Bridge *bridge)
 {
@@ -123,14 +122,14 @@ std::unique_ptr<File> Access::file(const std::string &path) const
 }
 
 template<class V>
-std::unique_ptr<Value<V>> Access::value(const std::string &path, const std::string &section, const std::string &name)
+ValuePtr<V> Access::value(const std::string &path, const std::string &section, const std::string &name)
 {
     return std::make_unique<Value<V>>(path, section, name, m_manager);
 }
 
 template<class V>
-std::unique_ptr<Value<V>> Access::value(const std::string &path, const std::string &section, const std::string &name,
-                                          const V &def, Flag flags)
+ValuePtr<V> Access::value(const std::string &path, const std::string &section, const std::string &name, const V &def,
+                          Flag flags)
 {
     return std::make_unique<Value<V>>(path, section, name, def, m_manager, flags);
 }
@@ -148,24 +147,23 @@ std::unique_ptr<Array<V>> Access::array(const std::string &path, const std::stri
     return std::make_unique<Array<V>>(path, section, name, def, m_manager, flags);
 }
 
-template std::unique_ptr<Value<bool>> Access::value(const std::string &path, const std::string &section,
-                                                    const std::string &name);
-template std::unique_ptr<Value<int64_t>> Access::value(const std::string &path, const std::string &section,
-                                                       const std::string &name);
-template std::unique_ptr<Value<double>> Access::value(const std::string &path, const std::string &section,
-                                                      const std::string &name);
-template std::unique_ptr<Value<std::string>> Access::value(const std::string &path, const std::string &section,
-                                                           const std::string &name);
+template std::unique_ptr<Value<bool>> Access::value<bool>(const std::string &path, const std::string &section,
+                                                          const std::string &name);
+template std::unique_ptr<Value<int64_t>> Access::value<int64_t>(const std::string &path, const std::string &section,
+                                                                const std::string &name);
+template std::unique_ptr<Value<double>> Access::value<double>(const std::string &path, const std::string &section,
+                                                              const std::string &name);
+template std::unique_ptr<Value<std::string>>
+Access::value<std::string>(const std::string &path, const std::string &section, const std::string &name);
 
 template std::unique_ptr<Value<bool>> Access::value(const std::string &path, const std::string &section,
-                                                      const std::string &name, const bool &def, Flag flags);
+                                                    const std::string &name, const bool &def, Flag flags);
 template std::unique_ptr<Value<int64_t>> Access::value(const std::string &path, const std::string &section,
-                                                         const std::string &name, const int64_t &def, Flag flags);
+                                                       const std::string &name, const int64_t &def, Flag flags);
 template std::unique_ptr<Value<double>> Access::value(const std::string &path, const std::string &section,
-                                                        const std::string &name, const double &def, Flag flags);
+                                                      const std::string &name, const double &def, Flag flags);
 template std::unique_ptr<Value<std::string>> Access::value(const std::string &path, const std::string &section,
-                                                             const std::string &name, const std::string &def,
-                                                             Flag flags);
+                                                           const std::string &name, const std::string &def, Flag flags);
 
 template std::unique_ptr<Array<bool>> Access::array(const std::string &path, const std::string &section,
                                                     const std::string &name);

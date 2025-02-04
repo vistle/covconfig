@@ -42,6 +42,11 @@ public:
             *entry) = 0; ///< called to notify that a configuration entry (\ref Value or \ref Array) has been changed
 };
 
+//enable value funcions only for supported non-array types
+template<class V>
+using ValuePtr = std::enable_if_t<detail::isValueType<V>::value,
+                                  std::unique_ptr<Value<V>>>; ///< unique pointer to a configuration value
+
 /// organize access to configuration system
 /** Creating an instance of Access controls access to the configuration system via a Manager. This Manager is created and destroyed as needed. */
 class COVEXPORT Access: detail::Logger {
@@ -57,18 +62,18 @@ public:
     void setPrefix(const std::string &dir); ///< set software installation prefix as additional search path
     bool setWorkspaceBridge(Bridge *bridge); ///< specify \ref Bridge for accessing per-model configuration values
     bool removeWorkspaceBridge(Bridge *bridge); ///< remove per-model configuration \ref Bridge
-    void setErrorHandler(std::function<void()> handler = nullptr); ///< what to do in case of errors, initially calls exit
+    void
+    setErrorHandler(std::function<void()> handler = nullptr); ///< what to do in case of errors, initially calls exit
     bool save(); ///< save changes in all files that should be saved on exit
 
     std::unique_ptr<File> file(const std::string &path) const; ///< get interface to a configuration file
 
     template<class V>
-    std::unique_ptr<Value<V>> value(const std::string &path, const std::string &section,
-                                    const std::string &name); ///< query existing configuration value
+    ValuePtr<V> value(const std::string &path, const std::string &section,
+                      const std::string &name); ///< query existing configuration value
     template<class V>
-    std::unique_ptr<Value<V>>
-    value(const std::string &path, const std::string &section, const std::string &name, const V &def,
-          Flag flags = Flag::Default); ///< create configuration value with the provided default
+    ValuePtr<V> value(const std::string &path, const std::string &section, const std::string &name, const V &def,
+                      Flag flags = Flag::Default); ///< create configuration value with the provided default
 
     template<class V>
     std::unique_ptr<Array<V>> array(const std::string &path, const std::string &section,
@@ -84,29 +89,29 @@ private:
 };
 
 extern template std::unique_ptr<Value<bool>>
-    COVEXPORT Access::value(const std::string &path, const std::string &section, const std::string &name);
+    COVEXPORT Access::value<bool>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<int64_t>>
-    COVEXPORT Access::value(const std::string &path, const std::string &section, const std::string &name);
+    COVEXPORT Access::value<int64_t>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<double>>
-    COVEXPORT Access::value(const std::string &path, const std::string &section, const std::string &name);
+    COVEXPORT Access::value<double>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<std::string>>
-    COVEXPORT Access::value(const std::string &path, const std::string &section, const std::string &name);
+    COVEXPORT Access::value<std::string>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<bool>> COVEXPORT Access::value(const std::string &path,
-                                                                            const std::string &section,
-                                                                            const std::string &name, const bool &def,
-                                                                            Flag flags);
+                                                                     const std::string &section,
+                                                                     const std::string &name, const bool &def,
+                                                                     Flag flags);
 extern template std::unique_ptr<Value<int64_t>> COVEXPORT Access::value(const std::string &path,
-                                                                               const std::string &section,
-                                                                               const std::string &name,
-                                                                               const int64_t &def, Flag flags);
+                                                                        const std::string &section,
+                                                                        const std::string &name, const int64_t &def,
+                                                                        Flag flags);
 extern template std::unique_ptr<Value<double>> COVEXPORT Access::value(const std::string &path,
-                                                                              const std::string &section,
-                                                                              const std::string &name,
-                                                                              const double &def, Flag flags);
+                                                                       const std::string &section,
+                                                                       const std::string &name, const double &def,
+                                                                       Flag flags);
 extern template std::unique_ptr<Value<std::string>> COVEXPORT Access::value(const std::string &path,
-                                                                                   const std::string &section,
-                                                                                   const std::string &name,
-                                                                                   const std::string &def, Flag flags);
+                                                                            const std::string &section,
+                                                                            const std::string &name,
+                                                                            const std::string &def, Flag flags);
 
 extern template std::unique_ptr<Array<bool>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name);
@@ -131,7 +136,7 @@ extern template std::unique_ptr<Array<double>> COVEXPORT Access::array(const std
 extern template std::unique_ptr<Array<std::string>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name,
                             const std::vector<std::string> &def, Flag flags);
-}
+} // namespace config
 #ifdef CONFIG_NAMESPACE
 }
 #endif

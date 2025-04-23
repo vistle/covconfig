@@ -24,6 +24,8 @@
 #define COVEXPORT COV_EXPORT
 #elif defined(coConfigNew_EXPORTS)
 #define COVEXPORT COV_EXPORT
+#elif defined(vvOpenConfig_EXPORTS)
+#define COVEXPORT COV_EXPORT
 #else
 #define COVEXPORT COV_IMPORT
 #endif

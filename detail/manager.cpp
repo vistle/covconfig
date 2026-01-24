@@ -289,7 +289,7 @@ Config &Manager::registerPath(const std::string &path)
     infixes.push_back("");
 
     auto parse_config([&](std::istream &file, const std::string &dir, const std::string &path,
-                          const std::string &pathname) -> bool {
+                          const std::string &pathname, bool overrideDefaults = false) -> bool {
         toml::table tbl;
         try {
             tbl = toml::parse(file, pathname);
@@ -303,12 +303,33 @@ Config &Manager::registerPath(const std::string &path)
             return false;
         }
         auto &config = m_configs[path];
-        config.path = path;
-        config.base = dir;
-        config.config = tbl;
-        config.exists = true;
+        if (overrideDefaults) {
+            config.defaultOverrides = tbl;
+            debug("registerPath") << pathname << " loaded as fallback overrides" << std::endl;
+        } else {
+            config.path = path;
+            config.base = dir;
+            config.config = tbl;
+            config.exists = true;
+        }
         return true;
     });
+
+#ifdef CONFIG_CMRC_NAMESPACE
+    std::string pathname = path + ".toml";
+    try {
+        std::string dir;
+
+        auto fs = cmrc::CONFIG_CMRC_NAMESPACE::get_filesystem();
+        auto data = fs.open(pathname);
+        pathname = "CMRC:" + pathname;
+        std::string s(data.begin(), data.end());
+        std::stringstream file(s);
+        parse_config(file, dir, path, pathname, true);
+    } catch (std::system_error &ex) {
+        debug("registerPath") << "CMRC exception while reading " << pathname << ": " << ex.what() << std::endl;
+    }
+#endif
 
     for (const auto &infix: infixes) {
         for (const auto &basedir: m_path) {
@@ -323,24 +344,6 @@ Config &Manager::registerPath(const std::string &path)
                 return m_configs[path];
         }
     }
-
-#ifdef CONFIG_CMRC_NAMESPACE
-    std::string pathname = path + ".toml";
-    try {
-        std::string dir;
-
-        auto fs = cmrc::CONFIG_CMRC_NAMESPACE::get_filesystem();
-        auto data = fs.open(pathname);
-        pathname = "CMRC:" + pathname;
-        std::string s(data.begin(), data.end());
-        std::stringstream file(s);
-        if (parse_config(file, dir, path, pathname)) {
-            return m_configs[path];
-        }
-    } catch (std::system_error &ex) {
-        debug("registerPath") << "CMRC exception while reading " << pathname << ": " << ex.what() << std::endl;
-    }
-#endif
 
     auto &config = m_configs[path];
     config.path = path;

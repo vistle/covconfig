@@ -148,6 +148,17 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
 }
 
 template<class V>
+V ValueEntry<V>::overrideDefaultValue(const V &value, bool &valid)
+{
+    valid = false;
+    if (auto opt = this->m_config.defaultOverrides[this->m_section][this->m_name].template value<V>()) {
+        valid = true;
+        return *opt;
+    }
+    return value;
+}
+
+template<class V>
 ValueEntry<V>::~ValueEntry()
 {
     this->store();
@@ -172,23 +183,46 @@ const V &EntryBase<V>::defaultValue() const
 }
 
 template<class V>
+bool EntryBase<V>::hasDefaultValue() const
+{
+    return m_defaultValueValid;
+}
+
+template<class V>
+bool EntryBase<V>::checkDefaultValue()
+{
+    bool overrideValid = false;
+    auto val = overrideDefaultValue(V(), overrideValid);
+    if (overrideValid) {
+        debug("checkDefaultValue") << key() << ": overridden default value: " << val << std::endl;
+        return setOrCheckDefaultValue(V());
+    }
+    return false;
+}
+
+template<class V>
 bool EntryBase<V>::setOrCheckDefaultValue(const V &value)
 {
+    bool overrideValid = false;
+    auto val = overrideDefaultValue(value, overrideValid);
+    if (overrideValid) {
+        debug("setOrCheckDefaultValue") << key() << ": overridden default value: " << val << std::endl;
+    }
     if (!m_defaultValueValid) {
-        m_defaultValue = value;
+        m_defaultValue = val;
         m_defaultValueValid = true;
         debug("setOrCheckDefaultValue") << key() << ": default: " << defaultValue() << std::endl;
-    } else if (value != m_defaultValue) {
+    } else if (val != m_defaultValue) {
         error("setOrCheckDefaultValue") << "differing default values for " << key() << ": " << defaultValue()
-                                        << " is registered, request is " << value << std::endl;
+                                        << " is registered, request is " << val << std::endl;
         m_manager->handleError();
         return false;
     }
 
     if (!exists()) {
         debug("setOrCheckDefaultValue") << key() << " does not exist, updating initial value from " << this->value()
-                                        << " to " << value << std::endl;
-        m_value = value;
+                                        << " to " << val << std::endl;
+        m_value = val;
     }
 
     return true;
@@ -269,6 +303,28 @@ ArrayEntry<V>::ArrayEntry(Manager *mgr, const std::string &path, const std::stri
         this->m_exists = true;
     }
 }
+
+template<class V>
+typename ArrayEntry<V>::ArrayType ArrayEntry<V>::overrideDefaultValue(const typename ArrayEntry<V>::ArrayType &value,
+                                                                      bool &valid)
+{
+    valid = false;
+    if (auto array = this->m_config.defaultOverrides[this->m_section][this->m_name].as_array()) {
+        typename ArrayEntry<V>::ArrayType result;
+        for (auto &v: *array) {
+            if (auto vv = v.template as<V>()) {
+                result.push_back(vv->get());
+            } else {
+                this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
+                return value;
+            }
+        }
+        valid = true;
+        return result;
+    }
+    return value;
+}
+
 
 template<class V>
 ArrayEntry<V>::~ArrayEntry()

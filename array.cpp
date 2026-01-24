@@ -22,6 +22,7 @@ Array<V>::Array(const std::string &path, const std::string &section, const std::
     if (!mgr)
         mgr = Manager::the();
     m_entry = mgr->getArray<V>(path, section, name, Flag::Default);
+    entry()->checkDefaultValue();
     entry()->addObserver(this);
 }
 

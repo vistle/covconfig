@@ -27,6 +27,7 @@ public:
     virtual ~ConfigBase();
 
     bool exists() const; ///< query whether data for entry was found in configuration file
+    bool hasDefaultValue() const; ///< query whether a default value for entry is available
     const std::string &path() const; ///< path fragment to configuration file, appended to various search prefixes
     const std::string &section() const; ///< section within configuration file
     const std::string &name() const; ///< name of entry within section in configuration file

@@ -32,6 +32,7 @@ struct Config {
     std::string path; // path fragment
     std::string base; // base directory
     toml::table config; // value storage
+    toml::table defaultOverrides; // default value overrides from resource files
     bool exists = false; // does file exist?
     bool modified = false;
     bool autosave = false; // save on exit?

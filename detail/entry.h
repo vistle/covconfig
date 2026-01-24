@@ -47,6 +47,7 @@ public:
     Entry(const std::string &classname, Manager *mgr, const std::string &path, const std::string &section,
           const std::string &name, Flag flags);
     virtual ~Entry();
+    virtual bool hasDefaultValue() const = 0;
     bool exists() const;
     virtual void assign() = 0;
     const std::string &path() const;
@@ -88,7 +89,12 @@ public:
 
     const V &value() const;
     const V &defaultValue() const;
+    bool checkDefaultValue();
     bool setOrCheckDefaultValue(const V &value);
+    bool hasDefaultValue() const override;
+
+protected:
+    virtual V overrideDefaultValue(const V &value, bool &valid) = 0;
 
     V m_value = V();
     bool m_defaultValueValid = false;
@@ -105,6 +111,7 @@ public:
     ~ValueEntry() override;
     std::unique_ptr<ConfigBase> create() override;
     void assign() override;
+    Type overrideDefaultValue(const Type &value, bool &valid) override;
 
     using Base::operator=;
     using Base::value;
@@ -115,12 +122,14 @@ template<class V>
 class ArrayEntry: public EntryBase<std::vector<typename VectorStorage<V>::Type>> {
 public:
     typedef typename VectorStorage<V>::Type Type;
-    typedef EntryBase<std::vector<Type>> Base;
+    typedef std::vector<Type> ArrayType;
+    typedef EntryBase<ArrayType> Base;
 
     ArrayEntry(Manager *mgr, const std::string &path, const std::string &section, const std::string &name, Flag flags);
     ~ArrayEntry() override;
     std::unique_ptr<ConfigBase> create() override;
     void assign() override;
+    ArrayType overrideDefaultValue(const ArrayType &value, bool &valid) override;
 
     using Base::operator=;
     using Base::value;

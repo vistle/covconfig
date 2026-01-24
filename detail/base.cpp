@@ -17,6 +17,11 @@ bool ConfigBase::exists() const
     return m_entry->exists();
 }
 
+bool ConfigBase::hasDefaultValue() const
+{
+    return m_entry->hasDefaultValue();
+}
+
 const std::string &ConfigBase::path() const
 {
     return m_entry->path();

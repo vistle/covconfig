@@ -8,6 +8,7 @@
 #include "observer.h"
 #include "flags.h"
 #include "logger.h"
+#include "../section.h"
 
 
 #include <string>
@@ -72,7 +73,7 @@ protected:
     std::string m_section;
     std::string m_name;
     Flag m_flags = Flag::Default;
-    Config &m_config;
+    std::shared_ptr<Config> m_config;
     std::set<Observer *> m_observers;
 };
 
@@ -145,10 +146,12 @@ extern template class ValueEntry<bool>;
 extern template class ValueEntry<int64_t>;
 extern template class ValueEntry<double>;
 extern template class ValueEntry<std::string>;
+extern template class ValueEntry<config::Section>;
 extern template class ArrayEntry<bool>;
 extern template class ArrayEntry<int64_t>;
 extern template class ArrayEntry<double>;
 extern template class ArrayEntry<std::string>;
+extern template class ArrayEntry<config::Section>;
 
 } // namespace detail
 } // namespace config

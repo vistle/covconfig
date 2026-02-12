@@ -4,6 +4,7 @@
 #include "../value.h"
 #include "../array.h"
 #include "../access.h"
+#include "../file.h"
 #include "manager.h"
 #include "entry.h"
 
@@ -48,6 +49,25 @@ const std::string &sep()
     if(s.empty())
         s = "/";
     return s;
+}
+
+const toml::table *table_for_section(const toml::table &root, const std::string &section)
+{
+    if (section.empty()) {
+        return &root;
+    }
+
+    auto dot = section.find('.');
+    if (dot == std::string::npos) {
+        return root[section].as_table();
+    }
+
+    auto parent = table_for_section(root, section.substr(0, dot));
+    if (!parent) {
+        return nullptr;
+    }
+    auto result =  table_for_section(*parent, section.substr(dot+1));
+    return result;
 }
 
 Manager *Manager::the()
@@ -268,12 +288,17 @@ const std::string &Manager::hostname() const
     return m_hostname;
 }
 
-Config &Manager::registerPath(const std::string &path)
+std::shared_ptr<Config> Manager::registerPath(const std::string &path)
 {
     std::lock_guard guard(m_mutex);
     auto it = m_configs.find(path);
     if (it != m_configs.end()) {
         return it->second;
+    }
+
+    auto &config = m_configs[path];
+    if (!config) {
+        config = std::make_shared<Config>();
     }
 
     std::vector<std::string> infixes;
@@ -302,15 +327,16 @@ Config &Manager::registerPath(const std::string &path)
             info("registerPath") << "unhandled exception while parsing " << pathname << ": " << ex.what() << std::endl;
             return false;
         }
-        auto &config = m_configs[path];
+        auto config = m_configs[path];
+        assert(config);
         if (overrideDefaults) {
-            config.defaultOverrides = tbl;
+            config->defaultOverrides = tbl;
             debug("registerPath") << pathname << " loaded as fallback overrides" << std::endl;
         } else {
-            config.path = path;
-            config.base = dir;
-            config.config = tbl;
-            config.exists = true;
+            config->path = path;
+            config->base = dir;
+            config->config = tbl;
+            config->exists = true;
         }
         return true;
     });
@@ -345,9 +371,8 @@ Config &Manager::registerPath(const std::string &path)
         }
     }
 
-    auto &config = m_configs[path];
-    config.path = path;
-    config.base = m_userPath;
+    config->path = path;
+    config->base = m_userPath;
     return config;
 }
 
@@ -389,13 +414,13 @@ bool Manager::save(const std::string &path)
         error("save") << "cannot save configuration " << path << ": not found" << std::endl;
         return false;
     }
-    std::lock_guard configGuard(it->second.mutex);
+    std::lock_guard configGuard(it->second->mutex);
     if (m_userPath.empty()) {
         error("save") << "cannot save configuration " << path << ": no save path" << std::endl;
         return false;
     }
 
-    auto &config = it->second.config;
+    auto &config = it->second->config;
 
     pruneEmptySections(&config);
 
@@ -403,7 +428,7 @@ bool Manager::save(const std::string &path)
     std::string backup = pathname + ".backup";
     if (config.empty()) { // do not save empty config files
         if (std::remove(pathname.c_str()) == 0) {
-            it->second.modified = false;
+            it->second->modified = false;
             return true;
         }
         return false;
@@ -432,7 +457,7 @@ bool Manager::save(const std::string &path)
         return false;
     }
 
-    it->second.modified = false;
+    it->second->modified = false;
 
     return true;
 }
@@ -442,7 +467,7 @@ bool Manager::saveAllAutosave()
     std::lock_guard guard(m_mutex);
     bool ok = true;
     for (auto &c: m_configs) {
-        if (c.second.autosave) {
+        if (c.second->autosave) {
             debug("~") << "saving " << c.first << std::endl;
             if (!save(c.first)) {
                 ok = false;
@@ -463,10 +488,14 @@ template ValueEntry<int64_t> *Manager::getValue(const std::string &, const std::
 template ValueEntry<double> *Manager::getValue(const std::string &, const std::string &, const std::string &, Flag);
 template ValueEntry<std::string> *Manager::getValue(const std::string &, const std::string &, const std::string &,
                                                     Flag);
+template ValueEntry<config::Section> *Manager::getValue(const std::string &, const std::string &, const std::string &,
+                                                    Flag);
 template ArrayEntry<bool> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<int64_t> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<double> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<std::string> *Manager::getArray(const std::string &, const std::string &, const std::string &,
+                                                    Flag);
+template ArrayEntry<config::Section> *Manager::getArray(const std::string &, const std::string &, const std::string &,
                                                     Flag);
 
 } // namespace detail

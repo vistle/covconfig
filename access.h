@@ -24,10 +24,6 @@ class Manager;
 }
 class File;
 class ConfigBase;
-template<class V>
-class Value;
-template<class V>
-class Array;
 
 /// provide a bridge for retrieving and storing per-model configuration values
 /** When configuration entries tagged with Flag::PerModel are changed, the registered bridge is notified of this via \ref Bridge::wasChanged.
@@ -41,11 +37,6 @@ public:
         const ConfigBase
             *entry) = 0; ///< called to notify that a configuration entry (\ref Value or \ref Array) has been changed
 };
-
-//enable value functions only for supported non-array types
-template<class V>
-using ValuePtr = std::enable_if_t<detail::isValueType<V>::value,
-                                  std::unique_ptr<Value<V>>>; ///< unique pointer to a configuration value
 
 /// organize access to configuration system
 /** Creating an instance of Access controls access to the configuration system via a Manager. This Manager is created and destroyed as needed. */

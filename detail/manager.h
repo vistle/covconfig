@@ -14,6 +14,7 @@
 #include "entry.h"
 #include "base.h"
 #include "logger.h"
+#include "../section.h"
 
 #include <toml++/toml.h>
 
@@ -27,6 +28,8 @@ class Access;
 class Bridge;
 
 namespace detail {
+
+const toml::table *table_for_section(const toml::table &root, const std::string &section);
 
 struct Config {
     std::string path; // path fragment
@@ -67,7 +70,7 @@ public:
     const std::string &cluster() const;
     int rank() const;
 
-    Config &registerPath(const std::string &path);
+    std::shared_ptr<Config> registerPath(const std::string &path);
     template<class V>
     ValueEntry<V> *getValue(const std::string &path, const std::string &section, const std::string &name, Flag flags);
     template<class V>
@@ -103,7 +106,7 @@ private:
     std::string m_userPath; // where to write configuration
     std::string m_installPrefix;
     std::vector<std::string> m_path;
-    std::map<std::string, Config> m_configs;
+    std::map<std::string, std::shared_ptr<Config>> m_configs;
 
     typedef ConfigKey Key;
     std::map<Key, Entry *> m_entries;
@@ -121,6 +124,8 @@ extern template ValueEntry<double> *Manager::getValue(const std::string &, const
                                                       Flag);
 extern template ValueEntry<std::string> *Manager::getValue(const std::string &, const std::string &,
                                                            const std::string &, Flag);
+extern template ValueEntry<config::Section> *Manager::getValue(const std::string &, const std::string &,
+                                                           const std::string &, Flag);
 extern template ArrayEntry<bool> *Manager::getArray(const std::string &, const std::string &, const std::string &,
                                                     Flag);
 extern template ArrayEntry<int64_t> *Manager::getArray(const std::string &, const std::string &, const std::string &,
@@ -128,6 +133,8 @@ extern template ArrayEntry<int64_t> *Manager::getArray(const std::string &, cons
 extern template ArrayEntry<double> *Manager::getArray(const std::string &, const std::string &, const std::string &,
                                                       Flag);
 extern template ArrayEntry<std::string> *Manager::getArray(const std::string &, const std::string &,
+                                                           const std::string &, Flag);
+extern template ArrayEntry<config::Section> *Manager::getArray(const std::string &, const std::string &,
                                                            const std::string &, Flag);
 
 } // namespace detail

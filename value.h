@@ -10,6 +10,7 @@
 #include "detail/export.h"
 #include "detail/flags.h"
 #include "detail/base.h"
+#include "section.h"
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
@@ -61,6 +62,7 @@ extern template class COVEXPORT Value<bool>; ///< instantiated type
 extern template class COVEXPORT Value<int64_t>; ///< instantiated type
 extern template class COVEXPORT Value<double>; ///< instantiated type
 extern template class COVEXPORT Value<std::string>; ///< instantiated type
+extern template class COVEXPORT Value<config::Section>; ///< instantiated type
 #endif
 }
 #ifdef CONFIG_NAMESPACE
@@ -71,5 +73,6 @@ typedef ConfigValue<bool> ConfigBool; ///< convenience typedef
 typedef ConfigValue<int64_t> ConfigInt; ///< convenience typedef
 typedef ConfigValue<double> ConfigFloat; ///< convenience typedef
 typedef ConfigValue<std::string> ConfigString; ///< convenience typedef
+typedef ConfigValue<config::Section> ConfigSection; ///< convenience typedef
 }
 #endif

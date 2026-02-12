@@ -105,6 +105,7 @@ template class COVEXPORT Value<bool>;
 template class COVEXPORT Value<int64_t>;
 template class COVEXPORT Value<double>;
 template class COVEXPORT Value<std::string>;
+template class COVEXPORT Value<config::Section>;
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

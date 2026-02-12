@@ -1,12 +1,12 @@
 PROJECT_NAME           = "CovConfig"
 PROJECT_BRIEF          = COVISE, OpenCOVER and Vistle Configuration Library
 
-INPUT                  = README.md access.h array.h value.h file.h config.h detail/base.h
+INPUT                  = README.md access.h array.h value.h file.h section.h config.h detail/base.h detail/flags.h
 
 USE_MDFILE_AS_MAINPAGE = README.md
 MARKDOWN_SUPPORT       = YES
 
-PREDEFINED             = CONFIG_NAMESPACE=cov
+PREDEFINED             = CONFIG_NAMESPACE=cov DOXYGEN
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 

@@ -11,6 +11,7 @@
 #include <toml++/toml.h>
 
 #include <cassert>
+#include <iostream>
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
@@ -18,6 +19,94 @@ namespace CONFIG_NAMESPACE {
 
 namespace config {
 namespace detail {
+
+namespace {
+template<class V>
+struct Convert {
+    typedef V Type;
+    typedef V TomlType;
+
+    static TomlType to_toml(Entry *entry, const V &v)
+    {
+        return v;
+    }
+
+    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name)
+    {
+        if (!tbl) {
+            return std::optional<Type>();
+        }
+        auto node = (*tbl)[name];
+        if (!node) {
+            return std::optional<Type>();
+        }
+        auto opt = node.template value<Type>();
+        if (!opt) {
+            entry->warn() << entry->key() << ": array not convertible to requested type" << std::endl;
+        }
+        return opt;
+    }
+
+    static std::optional<Type> as(Entry *entry, const toml::node &n)
+    {
+        auto v = n.template as<Type>();
+        if (!v) {
+            return std::optional<Type>();
+        }
+        return std::optional<Type>(v->get());
+    }
+};
+
+template<>
+struct Convert<config::Section> {
+    typedef config::Section Type;
+    typedef toml::table TomlType;
+
+    static TomlType to_toml(Entry *entry, const Type &v)
+    {
+        // FIXME
+        toml::table t;
+        return t;
+    }
+
+    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name)
+    {
+        if (!tbl) {
+            return std::optional<Type>();
+        }
+        auto node = (*tbl)[name];
+        if (!node) {
+            return std::optional<Type>();
+        }
+        std::string section = entry->section();
+        if (!section.empty() && !name.empty())
+            section += ".";
+        section += name;
+        auto sec = config::Section(entry->path(), section);
+        auto opt =  std::optional<Type>(sec);
+        return opt;
+    }
+
+    static const std::optional<Type> as(Entry *entry, const toml::node &n)
+    {
+        auto section = entry->section();
+        auto name = entry->name();
+        if (!section.empty() && !name.empty())
+            section += ".";
+        section += name;
+        auto tbl = n.as_table();
+        if (tbl) {
+            config::Section sec(entry->path(), section);
+            sec.setTomlTable(tbl);
+            return std::optional<config::Section>(sec);
+        }
+        return std::optional<config::Section>();
+    }
+};
+
+}
+
+
 
 Entry::Entry(const std::string &classname, Manager *mgr, const std::string &path, const std::string &section,
              const std::string &name, Flag flags)
@@ -130,7 +219,8 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
     if (rank >= 0) {
         std::string s = this->m_section + "-" + std::to_string(rank);
         this->debug() << "looking for value " << s << std::endl;
-        if (auto opt = this->m_config.config[s][this->m_name].template value<V>()) {
+        auto tbl = detail::table_for_section(this->m_config->config, s);
+        if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
             this->m_exists = true;
             this->m_section = s;
             this->m_value = *opt;
@@ -138,8 +228,9 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
         }
     }
     this->debug() << "searching in " << this->m_section << ":" << this->m_name << std::endl;
-    if (auto opt = this->m_config.config[this->m_section][this->m_name].template value<V>()) {
-        //debug() << m_config.config << std::endl;
+    auto tbl = detail::table_for_section(this->m_config->config, this->m_section);
+    if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
+        //debug() << m_config->config << std::endl;
         this->m_exists = true;
         this->m_value = *opt;
         this->debug() << "FOUND " << this->m_section << ":" << this->m_name << ": value=" << this->m_value << std::endl;
@@ -151,7 +242,12 @@ template<class V>
 V ValueEntry<V>::overrideDefaultValue(const V &value, bool &valid)
 {
     valid = false;
-    if (auto opt = this->m_config.defaultOverrides[this->m_section][this->m_name].template value<V>()) {
+    auto tbl = detail::table_for_section(this->m_config->defaultOverrides, this->m_section);
+    if (tbl)
+        this->debug("overrideDefaultValue") << "searching in " << *tbl << " for " << this->m_section << ":" << this->m_name << std::endl;
+    else
+        this->debug("overrideDefaultValue") << "searching in " << "(nil)" << " for " << this->m_section << ":" << this->m_name << std::endl;
+    if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
         valid = true;
         return *opt;
     }
@@ -253,10 +349,10 @@ void ValueEntry<V>::assign()
         return;
     }
 
-    auto tbl = this->m_config.config[this->m_section].as_table();
+    auto tbl = this->m_config->config[this->m_section].as_table();
     if (!tbl) {
-        this->m_config.config.insert(this->m_section, toml::table());
-        tbl = this->m_config.config[this->m_section].as_table();
+        this->m_config->config.insert(this->m_section, toml::table());
+        tbl = this->m_config->config[this->m_section].as_table();
         if (!tbl) {
             this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
                                   << this->m_section << " at " << this->m_path << std::endl;
@@ -267,10 +363,10 @@ void ValueEntry<V>::assign()
         tbl->erase(this->m_name);
         this->debug("assign") << this->key() << ", " << this->m_value << " is default, erased from toml" << std::endl;
     } else {
-        tbl->insert_or_assign(this->m_name, this->m_value);
+        tbl->insert_or_assign(this->m_name, Convert<V>::to_toml(this, this->m_value));
         this->debug("assign") << this->key() << " inserted/assigned " << this->m_value << " to toml" << std::endl;
     }
-    this->m_config.modified = true;
+    this->m_config->modified = true;
 }
 
 template<class V>
@@ -282,26 +378,33 @@ ArrayEntry<V>::ArrayEntry(Manager *mgr, const std::string &path, const std::stri
     const int rank = this->m_manager->rank();
     if (rank >= 0) {
         std::string s = this->m_section + "-" + std::to_string(rank);
-        array = this->m_config.config[s][this->m_name].as_array();
-        if (array)
-            this->m_section = s;
+        if (auto tbl = detail::table_for_section(this->m_config->config, s)) {
+            array = (*tbl)[this->m_name].as_array();
+            if (array)
+                this->m_section = s;
+        }
     }
     if (!array) {
-        array = this->m_config.config[this->m_section][this->m_name].as_array();
+        if (auto tbl = detail::table_for_section(this->m_config->config, this->m_section)) {
+            array = (*tbl)[this->m_name].as_array();
+        }
     }
 
-    if (array) {
-        for (auto &v: *array) {
-            if (auto vv = v.as<V>()) {
-                this->m_value.push_back(vv->get());
-            } else {
-                this->m_value.clear();
-                this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
-                return;
-            }
-        }
-        this->m_exists = true;
+
+    if (!array) {
+        return;
     }
+
+    for (auto &v: *array) {
+        if (auto vopt = Convert<V>::as(this, v)) {
+            this->m_value.push_back(*vopt);
+        } else {
+            this->m_value.clear();
+            this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
+            return;
+        }
+    }
+    this->m_exists = true;
 }
 
 template<class V>
@@ -309,20 +412,26 @@ typename ArrayEntry<V>::ArrayType ArrayEntry<V>::overrideDefaultValue(const type
                                                                       bool &valid)
 {
     valid = false;
-    if (auto array = this->m_config.defaultOverrides[this->m_section][this->m_name].as_array()) {
-        typename ArrayEntry<V>::ArrayType result;
-        for (auto &v: *array) {
-            if (auto vv = v.template as<V>()) {
-                result.push_back(vv->get());
-            } else {
-                this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
-                return value;
-            }
-        }
-        valid = true;
-        return result;
+    auto tbl = detail::table_for_section(this->m_config->defaultOverrides, this->m_section);
+    if (!tbl) {
+        return value;
     }
-    return value;
+    auto array = (*tbl)[this->m_name].as_array();
+    if (!array) {
+        return value;
+    }
+
+    typename ArrayEntry<V>::ArrayType result;
+    for (auto &v: *array) {
+        if (auto vopt = Convert<V>::as(this, v)) {
+            result.push_back(*vopt);
+        } else {
+            this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
+            return value;
+        }
+    }
+    valid = true;
+    return result;
 }
 
 
@@ -347,11 +456,11 @@ void ArrayEntry<V>::assign()
         return;
     }
 
-    std::lock_guard guard(this->m_config.mutex);
-    auto tbl = this->m_config.config[this->m_section].as_table();
+    std::lock_guard guard(this->m_config->mutex);
+    auto tbl = this->m_config->config[this->m_section].as_table();
     if (!tbl) {
-        this->m_config.config.insert(this->m_section, toml::table());
-        tbl = this->m_config.config[this->m_section].as_table();
+        this->m_config->config.insert(this->m_section, toml::table());
+        tbl = this->m_config->config[this->m_section].as_table();
         if (!tbl) {
             this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
                                   << this->m_section << " at " << this->m_path << std::endl;
@@ -364,12 +473,12 @@ void ArrayEntry<V>::assign()
     } else {
         toml::array array;
         for (auto &v: this->m_value) {
-            array.push_back(V(v));
+            array.push_back(Convert<V>::to_toml(this, v));
         }
         tbl->insert_or_assign(this->m_name, array);
         this->debug("assign") << this->key() << " inserted/assigned " << this->m_value << " to toml" << std::endl;
     }
-    this->m_config.modified = true;
+    this->m_config->modified = true;
 }
 
 template<class V>
@@ -403,22 +512,26 @@ template class EntryBase<bool>;
 template class EntryBase<int64_t>;
 template class EntryBase<double>;
 template class EntryBase<std::string>;
+template class EntryBase<config::Section>;
 
 template class EntryBase<std::vector<char>>;
 template class EntryBase<std::vector<int64_t>>;
 template class EntryBase<std::vector<double>>;
 template class EntryBase<std::vector<std::string>>;
+template class EntryBase<std::vector<config::Section>>;
 
 
 template class ValueEntry<bool>;
 template class ValueEntry<int64_t>;
 template class ValueEntry<double>;
 template class ValueEntry<std::string>;
+template class ValueEntry<config::Section>;
 
 template class ArrayEntry<bool>;
 template class ArrayEntry<int64_t>;
 template class ArrayEntry<double>;
 template class ArrayEntry<std::string>;
+template class ArrayEntry<config::Section>;
 
 } // namespace detail
 } // namespace config

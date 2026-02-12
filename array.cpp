@@ -179,6 +179,7 @@ template class COVEXPORT Array<bool>;
 template class COVEXPORT Array<int64_t>;
 template class COVEXPORT Array<double>;
 template class COVEXPORT Array<std::string>;
+template class COVEXPORT Array<config::Section>;
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

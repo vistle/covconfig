@@ -42,7 +42,7 @@ public:
             *entry) = 0; ///< called to notify that a configuration entry (\ref Value or \ref Array) has been changed
 };
 
-//enable value funcions only for supported non-array types
+//enable value functions only for supported non-array types
 template<class V>
 using ValuePtr = std::enable_if_t<detail::isValueType<V>::value,
                                   std::unique_ptr<Value<V>>>; ///< unique pointer to a configuration value

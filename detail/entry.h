@@ -42,7 +42,7 @@ class ArrayEntry;
 template<class V>
 class ValueEntry;
 
-class Entry: protected Logger {
+class Entry: public Logger {
 public:
     Entry(const std::string &classname, Manager *mgr, const std::string &path, const std::string &section,
           const std::string &name, Flag flags);

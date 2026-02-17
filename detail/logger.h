@@ -31,7 +31,7 @@ public:
     Logger(const std::string &classname);
     virtual ~Logger();
 
-protected:
+public:
     std::ostream &debug(const std::string &func = std::string()) const;
     std::ostream &info(const std::string &func = std::string()) const;
     std::ostream &warn(const std::string &func = std::string()) const;

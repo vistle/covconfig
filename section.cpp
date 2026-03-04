@@ -191,6 +191,8 @@ template std::unique_ptr<Value<double>> COVEXPORT Section::value<double>(const s
                                                                       const std::string &name);
 template std::unique_ptr<Value<std::string>> COVEXPORT Section::value<std::string>(const std::string &section,
                                                                                 const std::string &name);
+template std::unique_ptr<Value<Section>> COVEXPORT Section::value<Section>(const std::string &section,
+                                                                                const std::string &name);
 template std::unique_ptr<Value<bool>> COVEXPORT Section::value(const std::string &section, const std::string &name,
                                                             const bool &def, Flag flags);
 template std::unique_ptr<Value<int64_t>> COVEXPORT Section::value(const std::string &section, const std::string &name,
@@ -204,6 +206,7 @@ template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string
 template std::unique_ptr<Array<int64_t>> COVEXPORT Section::array(const std::string &section, const std::string &name);
 template std::unique_ptr<Array<double>> COVEXPORT Section::array(const std::string &section, const std::string &name);
 template std::unique_ptr<Array<std::string>> COVEXPORT Section::array(const std::string &section, const std::string &name);
+template std::unique_ptr<Array<Section>> COVEXPORT Section::array(const std::string &section, const std::string &name);
 template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string &section, const std::string &name,
                                                             const std::vector<bool> &def, Flag flags);
 template std::unique_ptr<Array<int64_t>> COVEXPORT Section::array(const std::string &section, const std::string &name,

@@ -125,7 +125,7 @@ extern template ValueEntry<double> *Manager::getValue(const std::string &, const
 extern template ValueEntry<std::string> *Manager::getValue(const std::string &, const std::string &,
                                                            const std::string &, Flag);
 extern template ValueEntry<config::Section> *Manager::getValue(const std::string &, const std::string &,
-                                                           const std::string &, Flag);
+                                                               const std::string &, Flag);
 extern template ArrayEntry<bool> *Manager::getArray(const std::string &, const std::string &, const std::string &,
                                                     Flag);
 extern template ArrayEntry<int64_t> *Manager::getArray(const std::string &, const std::string &, const std::string &,
@@ -135,10 +135,10 @@ extern template ArrayEntry<double> *Manager::getArray(const std::string &, const
 extern template ArrayEntry<std::string> *Manager::getArray(const std::string &, const std::string &,
                                                            const std::string &, Flag);
 extern template ArrayEntry<config::Section> *Manager::getArray(const std::string &, const std::string &,
-                                                           const std::string &, Flag);
+                                                               const std::string &, Flag);
 
 } // namespace detail
-}
+} // namespace config
 #ifdef CONFIG_NAMESPACE
 }
 #endif

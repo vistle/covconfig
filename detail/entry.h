@@ -10,7 +10,6 @@
 #include "logger.h"
 #include "../section.h"
 
-
 #include <string>
 #include <set>
 #include <memory>
@@ -23,6 +22,7 @@ namespace CONFIG_NAMESPACE {
 namespace config {
 
 class ConfigBase;
+
 namespace detail {
 
 struct Config;
@@ -54,6 +54,7 @@ public:
     const std::string &path() const;
     const std::string &section() const;
     const std::string &name() const;
+    const std::string fullname() const;
     std::string key() const;
 
     void addObserver(Observer *o);

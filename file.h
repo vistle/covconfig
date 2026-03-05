@@ -32,6 +32,7 @@ class Array;
 /// query for existing sections and entries within a configuration file
 class COVEXPORT File: public Section {
     friend class Section;
+
 public:
     File(const std::string &path, detail::Manager *mgr = nullptr); ///< create an interface to a configuration file
     ~File(); ///< destructor

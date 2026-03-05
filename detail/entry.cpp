@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 #include "entry.h"
+#include "tomlaccess.h"
 #include "manager.h"
 #include "output.h"
 #include "../value.h"
 #include "../array.h"
+#include "../section.h"
 #include <mutex>
 
 #include <toml++/toml.h>
@@ -19,93 +21,6 @@ namespace CONFIG_NAMESPACE {
 
 namespace config {
 namespace detail {
-
-namespace {
-template<class V>
-struct Convert {
-    typedef V Type;
-    typedef V TomlType;
-
-    static TomlType to_toml(Entry *entry, const V &v)
-    {
-        return v;
-    }
-
-    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name)
-    {
-        if (!tbl) {
-            return std::optional<Type>();
-        }
-        auto node = (*tbl)[name];
-        if (!node) {
-            return std::optional<Type>();
-        }
-        auto opt = node.template value<Type>();
-        if (!opt) {
-            entry->warn() << entry->key() << ": array not convertible to requested type" << std::endl;
-        }
-        return opt;
-    }
-
-    static std::optional<Type> as(Entry *entry, const toml::node &n)
-    {
-        auto v = n.template as<Type>();
-        if (!v) {
-            return std::optional<Type>();
-        }
-        return std::optional<Type>(v->get());
-    }
-};
-
-template<>
-struct Convert<config::Section> {
-    typedef config::Section Type;
-    typedef toml::table TomlType;
-
-    static TomlType to_toml(Entry *entry, const Type &v)
-    {
-        // FIXME
-        toml::table t;
-        return t;
-    }
-
-    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name)
-    {
-        if (!tbl) {
-            return std::optional<Type>();
-        }
-        auto node = (*tbl)[name];
-        if (!node) {
-            return std::optional<Type>();
-        }
-        std::string section = entry->section();
-        if (!section.empty() && !name.empty())
-            section += ".";
-        section += name;
-        auto sec = config::Section(entry->path(), section);
-        auto opt =  std::optional<Type>(sec);
-        return opt;
-    }
-
-    static const std::optional<Type> as(Entry *entry, const toml::node &n)
-    {
-        auto section = entry->section();
-        auto name = entry->name();
-        if (!section.empty() && !name.empty())
-            section += ".";
-        section += name;
-        auto tbl = n.as_table();
-        if (tbl) {
-            config::Section sec(entry->path(), section);
-            sec.setTomlTable(tbl);
-            return std::optional<config::Section>(sec);
-        }
-        return std::optional<config::Section>();
-    }
-};
-
-}
-
 
 
 Entry::Entry(const std::string &classname, Manager *mgr, const std::string &path, const std::string &section,
@@ -158,14 +73,27 @@ const std::string &Entry::name() const
     return m_name;
 }
 
+const std::string Entry::fullname() const
+{
+    std::string name;
+
+    if (m_section.empty()) {
+        name = m_name;
+    } else if (m_name.empty()) {
+        name = m_section;
+    } else {
+        name = m_section + "." + m_name;
+    }
+
+    return name;
+}
+
 std::string Entry::key() const
 {
     std::string k;
     k += path();
     k += ":";
-    k += section();
-    k += ":";
-    k += name();
+    k += fullname();
     return k;
 }
 
@@ -219,7 +147,7 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
     if (rank >= 0) {
         std::string s = this->m_section + "-" + std::to_string(rank);
         this->debug() << "looking for value " << s << std::endl;
-        auto tbl = detail::table_for_section(this->m_config->config, s);
+        auto tbl = detail::table_for_section(*this, this->m_config->config, s);
         if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
             this->m_exists = true;
             this->m_section = s;
@@ -227,13 +155,13 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
             return;
         }
     }
-    this->debug() << "searching in " << this->m_section << ":" << this->m_name << std::endl;
-    auto tbl = detail::table_for_section(this->m_config->config, this->m_section);
+    this->debug() << "searching in " << this->m_section << "." << this->m_name << std::endl;
+    auto tbl = detail::table_for_section(*this, this->m_config->config, this->m_section);
     if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
         //debug() << m_config->config << std::endl;
         this->m_exists = true;
         this->m_value = *opt;
-        this->debug() << "FOUND " << this->m_section << ":" << this->m_name << ": value=" << this->m_value << std::endl;
+        this->debug() << "FOUND " << this->m_section << "." << this->m_name << ": value=" << this->m_value << std::endl;
         return;
     }
 }
@@ -242,12 +170,15 @@ template<class V>
 V ValueEntry<V>::overrideDefaultValue(const V &value, bool &valid)
 {
     valid = false;
-    auto tbl = detail::table_for_section(this->m_config->defaultOverrides, this->m_section);
+    auto tbl = detail::table_for_section(*this, this->m_config->defaultOverrides, this->m_section);
     if (tbl)
-        this->debug("overrideDefaultValue") << "searching in " << *tbl << " for " << this->m_section << ":" << this->m_name << std::endl;
+        this->debug("overrideDefaultValue")
+            << "searching in " << *tbl << " for " << this->m_section << "." << this->m_name << std::endl;
     else
-        this->debug("overrideDefaultValue") << "searching in " << "(nil)" << " for " << this->m_section << ":" << this->m_name << std::endl;
-    if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
+        this->debug("overrideDefaultValue") << "searching in "
+                                            << "(nil)"
+                                            << " for " << this->m_section << "." << this->m_name << std::endl;
+    if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name, true)) {
         valid = true;
         return *opt;
     }
@@ -349,15 +280,11 @@ void ValueEntry<V>::assign()
         return;
     }
 
-    auto tbl = this->m_config->config[this->m_section].as_table();
+    auto tbl = detail::table_for_section(*this, this->m_config->config, this->m_section, true);
     if (!tbl) {
-        this->m_config->config.insert(this->m_section, toml::table());
-        tbl = this->m_config->config[this->m_section].as_table();
-        if (!tbl) {
-            this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
-                                  << this->m_section << " at " << this->m_path << std::endl;
-            return;
-        }
+        this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
+                              << this->m_section << " at " << this->m_path << std::endl;
+        return;
     }
     if (this->m_defaultValueValid && this->m_value == this->m_defaultValue) {
         tbl->erase(this->m_name);
@@ -378,14 +305,14 @@ ArrayEntry<V>::ArrayEntry(Manager *mgr, const std::string &path, const std::stri
     const int rank = this->m_manager->rank();
     if (rank >= 0) {
         std::string s = this->m_section + "-" + std::to_string(rank);
-        if (auto tbl = detail::table_for_section(this->m_config->config, s)) {
+        if (auto tbl = detail::table_for_section(*this, this->m_config->config, s)) {
             array = (*tbl)[this->m_name].as_array();
             if (array)
                 this->m_section = s;
         }
     }
     if (!array) {
-        if (auto tbl = detail::table_for_section(this->m_config->config, this->m_section)) {
+        if (auto tbl = detail::table_for_section(*this, this->m_config->config, this->m_section)) {
             array = (*tbl)[this->m_name].as_array();
         }
     }
@@ -395,14 +322,16 @@ ArrayEntry<V>::ArrayEntry(Manager *mgr, const std::string &path, const std::stri
         return;
     }
 
+    size_t idx = 0;
     for (auto &v: *array) {
-        if (auto vopt = Convert<V>::as(this, v)) {
+        if (auto vopt = Convert<V>::as(this, idx, v)) {
             this->m_value.push_back(*vopt);
         } else {
             this->m_value.clear();
             this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
             return;
         }
+        ++idx;
     }
     this->m_exists = true;
 }
@@ -412,7 +341,7 @@ typename ArrayEntry<V>::ArrayType ArrayEntry<V>::overrideDefaultValue(const type
                                                                       bool &valid)
 {
     valid = false;
-    auto tbl = detail::table_for_section(this->m_config->defaultOverrides, this->m_section);
+    auto tbl = detail::table_for_section(*this, this->m_config->defaultOverrides, this->m_section);
     if (!tbl) {
         return value;
     }
@@ -422,13 +351,15 @@ typename ArrayEntry<V>::ArrayType ArrayEntry<V>::overrideDefaultValue(const type
     }
 
     typename ArrayEntry<V>::ArrayType result;
+    size_t idx = 0;
     for (auto &v: *array) {
-        if (auto vopt = Convert<V>::as(this, v)) {
+        if (auto vopt = Convert<V>::as(this, idx, v)) {
             result.push_back(*vopt);
         } else {
             this->warn() << this->key() << ": array not convertible to requested type" << std::endl;
             return value;
         }
+        ++idx;
     }
     valid = true;
     return result;
@@ -457,15 +388,11 @@ void ArrayEntry<V>::assign()
     }
 
     std::lock_guard guard(this->m_config->mutex);
-    auto tbl = this->m_config->config[this->m_section].as_table();
+    auto tbl = detail::table_for_section(*this, this->m_config->config, this->m_section, true);
     if (!tbl) {
-        this->m_config->config.insert(this->m_section, toml::table());
-        tbl = this->m_config->config[this->m_section].as_table();
-        if (!tbl) {
-            this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
-                                  << this->m_section << " at " << this->m_path << std::endl;
-            return;
-        }
+        this->error("assign") << "name=" << this->m_name << ", could not insert parent table for section "
+                              << this->m_section << " at " << this->m_path << std::endl;
+        return;
     }
     if (this->m_defaultValueValid && this->m_value == this->m_defaultValue) {
         tbl->erase(this->m_name);

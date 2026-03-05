@@ -82,7 +82,7 @@ V Array<V>::operator[](size_t index) const
 }
 
 template<class V>
-typename Array<V>::ValueProxy &Array<V>::ValueProxy::operator=(const V &value)
+ValueProxy<V> &ValueProxy<V>::operator=(const V &value)
 {
     assert(array);
     if (array) {
@@ -95,7 +95,7 @@ typename Array<V>::ValueProxy &Array<V>::ValueProxy::operator=(const V &value)
 }
 
 template<class V>
-typename Array<V>::ValueProxy Array<V>::operator[](size_t index)
+ValueProxy<V> Array<V>::operator[](size_t index)
 {
     if (index >= size()) {
         debug("operator[]") << "resizing from " << size() << " for access at " << index << std::endl;
@@ -106,11 +106,11 @@ typename Array<V>::ValueProxy Array<V>::operator[](size_t index)
 }
 
 template<class V>
-Array<V>::ValueProxy::ValueProxy(Array<V> *array, size_t index): array(array), index(index)
+ValueProxy<V>::ValueProxy(Array<V> *array, size_t index): array(array), index(index)
 {}
 
 template<class V>
-Array<V>::ValueProxy::~ValueProxy()
+ValueProxy<V>::~ValueProxy()
 {
     array->entry()->store();
 }
@@ -180,6 +180,11 @@ template class COVEXPORT Array<int64_t>;
 template class COVEXPORT Array<double>;
 template class COVEXPORT Array<std::string>;
 template class COVEXPORT Array<config::Section>;
+template class COVEXPORT detail::ValueProxy<bool>; ///< instantiated type
+template class COVEXPORT detail::ValueProxy<int64_t>; ///< instantiated type
+template class COVEXPORT detail::ValueProxy<double>; ///< instantiated type
+template class COVEXPORT detail::ValueProxy<std::string>; ///< instantiated type
+template class COVEXPORT detail::ValueProxy<config::Section>; ///< instantiated type
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

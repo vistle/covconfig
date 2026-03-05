@@ -46,28 +46,9 @@ static Manager *instance = nullptr;
 const std::string &sep()
 {
     static std::string s;
-    if(s.empty())
+    if (s.empty())
         s = "/";
     return s;
-}
-
-const toml::table *table_for_section(const toml::table &root, const std::string &section)
-{
-    if (section.empty()) {
-        return &root;
-    }
-
-    auto dot = section.find('.');
-    if (dot == std::string::npos) {
-        return root[section].as_table();
-    }
-
-    auto parent = table_for_section(root, section.substr(0, dot));
-    if (!parent) {
-        return nullptr;
-    }
-    auto result =  table_for_section(*parent, section.substr(dot+1));
-    return result;
 }
 
 Manager *Manager::the()
@@ -89,12 +70,12 @@ bool Manager::exists()
 Manager::Manager(const std::string &host, const std::string &cluster, int rank)
 : Logger("Manager"), m_hostname(host), m_cluster(cluster), m_rank(rank)
 {
-    setErrorHandler([this](){
-            if (!getenv("COVCONFIG_IGNORE_ERRORS")) {
+    setErrorHandler([this]() {
+        if (!getenv("COVCONFIG_IGNORE_ERRORS")) {
             error("default error handler") << "terminating - set COVCONFIG_IGNORE_ERRORS to continue" << std::endl;
             exit(1);
-            }
-            });
+        }
+    });
     if (instance) {
         debug() << "host=" << host << ", cluster=" << cluster << ", rank=" << rank
                 << ", not overwriting existing instance" << std::endl;
@@ -381,7 +362,7 @@ bool Manager::sendToWorkspace(const ConfigBase *entry)
     if (!m_bridge) {
         if (!m_noWorkspaceWarning) {
             warn("sendToWorkspace") << "cannot save " << entry->name() << ", no bridge registered"
-            << " - this message will not be repeated for other entries" << std::endl;
+                                    << " - this message will not be repeated for other entries" << std::endl;
             m_noWorkspaceWarning = true;
         }
         return true;
@@ -489,14 +470,14 @@ template ValueEntry<double> *Manager::getValue(const std::string &, const std::s
 template ValueEntry<std::string> *Manager::getValue(const std::string &, const std::string &, const std::string &,
                                                     Flag);
 template ValueEntry<config::Section> *Manager::getValue(const std::string &, const std::string &, const std::string &,
-                                                    Flag);
+                                                        Flag);
 template ArrayEntry<bool> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<int64_t> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<double> *Manager::getArray(const std::string &, const std::string &, const std::string &, Flag);
 template ArrayEntry<std::string> *Manager::getArray(const std::string &, const std::string &, const std::string &,
                                                     Flag);
 template ArrayEntry<config::Section> *Manager::getArray(const std::string &, const std::string &, const std::string &,
-                                                    Flag);
+                                                        Flag);
 
 } // namespace detail
 } // namespace config

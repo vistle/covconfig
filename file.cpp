@@ -24,8 +24,7 @@ const std::string sep("/");
 } // namespace
 
 
-File::File(const std::string &path, detail::Manager *mgr)
-: Section(path, "", mgr ? mgr : detail::Manager::the())
+File::File(const std::string &path, detail::Manager *mgr): Section(path, "", mgr ? mgr : detail::Manager::the())
 {}
 
 File::~File() = default;

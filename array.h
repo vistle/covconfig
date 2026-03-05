@@ -18,12 +18,37 @@ namespace CONFIG_NAMESPACE {
 
 namespace config {
 
+template<class V>
+class Array;
+
 namespace detail {
 class Manager;
 /// opaque storage for \ref Array's of type V
 template<class V>
 class ArrayEntry;
+
+/// notify configuration subsystem when array members have been modified
+/** proxy class for notifying configuration subsystem of changes to array members. Not meant to be stored by the caller of \ref Array::operator[] */
+template<class V>
+class COVEXPORT ValueProxy {
+    friend Array<V>;
+
+public:
+    operator V() { return const_cast<const Array<V> &>(*array)[index]; } ///< retrieve value
+    ValueProxy &operator=(
+        const V
+            &value); ///< assign new value to entry and notify other instances of \ref Array referencing the same data
+
+    ~ValueProxy();
+
+private:
+    ValueProxy(Array<V> *array, size_t index);
+    Array<V> *array = nullptr;
+    size_t index = 0;
+};
+
 } // namespace detail
+
 
 /// access a homogeneous array of configuration values
 /** retrieve, modify and store a homogeneous array of configuration values.
@@ -33,27 +58,10 @@ All array members have to be of the same type, even though this is not required 
 template<class V>
 class Array: public ConfigBase {
     friend class detail::ArrayEntry<V>;
-    friend class ValueProxy;
+    friend class detail::ValueProxy<V>;
 
 public:
-    /// notify configuration subsystem when array members have been modified
-    /** proxy class for notifying configuration subsystem of changes to array members. Not meant to be stored by the caller of \ref Array::operator[] */
-    class COVEXPORT ValueProxy {
-        friend Array;
-
-    public:
-        operator V() { return const_cast<const Array &>(*array)[index]; } ///< retrieve value
-        ValueProxy &operator=(
-            const V &
-                value); ///< assign new value to entry and notify other instances of \ref Array referencing the same data
-
-        ~ValueProxy();
-
-    private:
-        ValueProxy(Array<V> *array, size_t index);
-        Array *array = nullptr;
-        size_t index = 0;
-    };
+    typedef detail::ValueProxy<V> ValueProxy;
 
     Array() = delete;
     Array(const Array &other) =
@@ -88,6 +96,11 @@ extern template class COVEXPORT Array<int64_t>; ///< instantiated type
 extern template class COVEXPORT Array<double>; ///< instantiated type
 extern template class COVEXPORT Array<std::string>; ///< instantiated type
 extern template class COVEXPORT Array<config::Section>; ///< instantiated type
+extern template class COVEXPORT detail::ValueProxy<bool>; ///< instantiated type
+extern template class COVEXPORT detail::ValueProxy<int64_t>; ///< instantiated type
+extern template class COVEXPORT detail::ValueProxy<double>; ///< instantiated type
+extern template class COVEXPORT detail::ValueProxy<std::string>; ///< instantiated type
+extern template class COVEXPORT detail::ValueProxy<config::Section>; ///< instantiated type
 #endif
 
 } // namespace config

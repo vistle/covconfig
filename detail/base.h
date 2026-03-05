@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 /// \file base.h
-/// common base class for all \ref Array's and \ref Value's
+/// common base class for all \ref cov::config::Array's and \ref cov::config::Value's
+
 #pragma once
+
+#ifdef DOXYGEN
+#include "../value.h"
+#include "../array.h"
+#endif
 
 #include "export.h"
 #include "logger.h"
@@ -16,12 +22,16 @@ namespace CONFIG_NAMESPACE {
 
 namespace config {
 
+class Section;
+
 namespace detail {
 class Entry;
 }
 
 /// polymorphic access to \ref Value's and \ref Array's
 class COVEXPORT ConfigBase: protected detail::Logger, protected detail::Observer {
+    friend class Section;
+
 public:
     using Logger::Logger;
     virtual ~ConfigBase();
@@ -36,7 +46,7 @@ public:
 protected:
     detail::Entry *m_entry = nullptr; ///< access to runtime storage of data
 };
-}
+} // namespace config
 #ifdef CONFIG_NAMESPACE
 }
 #endif

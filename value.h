@@ -52,6 +52,8 @@ public:
 
 private:
     Value(detail::ValueEntry<V> *entry); ///< create from a provided existing entry where data is stored
+    Value(detail::ValueEntry<V> *parent, const std::string &subsection,
+          const std::string &name); ///< create from a provided existing entry where data is stored
 
     void update() override; ///< called when value is changed
     detail::ValueEntry<V> *entry() const; ///< access storage of value
@@ -64,7 +66,7 @@ extern template class COVEXPORT Value<double>; ///< instantiated type
 extern template class COVEXPORT Value<std::string>; ///< instantiated type
 extern template class COVEXPORT Value<config::Section>; ///< instantiated type
 #endif
-}
+} // namespace config
 #ifdef CONFIG_NAMESPACE
 template<class V>
 using ConfigValue = config::Value<V>; ///< bring into provided namespace

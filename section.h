@@ -22,27 +22,31 @@ namespace config {
 namespace detail {
 class Manager;
 struct Config;
+template<class V>
+struct Convert;
 } // namespace detail
 class Section;
 class File;
 class ConfigBase;
 
-COVEXPORT std::ostream& operator<<(std::ostream& os, const Section& section);
-COVEXPORT std::ostream& operator<<(std::ostream& os, const std::vector<Section> &section);
-COVEXPORT bool operator==(const Section& lhs, const Section& rhs);
-COVEXPORT bool operator!=(const Section& lhs, const Section& rhs);
+COVEXPORT std::ostream &operator<<(std::ostream &os, const Section &section);
+COVEXPORT std::ostream &operator<<(std::ostream &os, const std::vector<Section> &section);
+COVEXPORT bool operator==(const Section &lhs, const Section &rhs);
+COVEXPORT bool operator!=(const Section &lhs, const Section &rhs);
 
 /// query for existing sections and entries within a configuration section
 class COVEXPORT Section: protected detail::Logger {
-    friend bool operator==(const Section& lhs, const Section& rhs);
-    friend bool operator!=(const Section& lhs, const Section& rhs);
-    friend std::ostream& operator<<(std::ostream& os, const Section& section);
+    friend bool operator==(const Section &lhs, const Section &rhs);
+    friend bool operator!=(const Section &lhs, const Section &rhs);
+    friend std::ostream &operator<<(std::ostream &os, const Section &section);
     friend class File;
+    friend struct detail::Convert<Section>;
 
 public:
     Section(detail::Manager *mgr = nullptr); ///< create an interface to a configuration file
     Section(Section *parent, const std::string &name); ///< create an interface to a subsection
-    Section(const std::string &path, const std::string &section, detail::Manager *mgr = nullptr); ///< create an interface to a configuration file
+    Section(const std::string &path, const std::string &section,
+            detail::Manager *mgr = nullptr); ///< create an interface to a configuration file
     ~Section(); ///< destructor
 
     std::string sectionname() const;
@@ -76,17 +80,17 @@ private:
 };
 
 extern template std::unique_ptr<Value<bool>> COVEXPORT Section::value<bool>(const std::string &section,
-                                                                         const std::string &name);
+                                                                            const std::string &name);
 extern template std::unique_ptr<Value<int64_t>> COVEXPORT Section::value<int64_t>(const std::string &section,
-                                                                               const std::string &name);
+                                                                                  const std::string &name);
 extern template std::unique_ptr<Value<double>> COVEXPORT Section::value<double>(const std::string &section,
-                                                                             const std::string &name);
+                                                                                const std::string &name);
 extern template std::unique_ptr<Value<std::string>> COVEXPORT Section::value<std::string>(const std::string &section,
-                                                                                       const std::string &name);
+                                                                                          const std::string &name);
 extern template std::unique_ptr<Value<Section>> COVEXPORT Section::value<Section>(const std::string &section,
-                                                                                       const std::string &name);
-extern template std::unique_ptr<Value<bool>> COVEXPORT Section::value(const std::string &section, const std::string &name,
-                                                                   const bool &def, Flag flags);
+                                                                                  const std::string &name);
+extern template std::unique_ptr<Value<bool>>
+    COVEXPORT Section::value(const std::string &section, const std::string &name, const bool &def, Flag flags);
 extern template std::unique_ptr<Value<int64_t>>
     COVEXPORT Section::value(const std::string &section, const std::string &name, const int64_t &def, Flag flags);
 extern template std::unique_ptr<Value<double>>
@@ -94,27 +98,29 @@ extern template std::unique_ptr<Value<double>>
 extern template std::unique_ptr<Value<std::string>>
     COVEXPORT Section::value(const std::string &section, const std::string &name, const std::string &def, Flag flags);
 
-extern template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string &section, const std::string &name);
-extern template std::unique_ptr<Array<int64_t>> COVEXPORT Section::array(const std::string &section,
+extern template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string &section,
                                                                       const std::string &name);
-extern template std::unique_ptr<Array<double>> COVEXPORT Section::array(const std::string &section,
-                                                                     const std::string &name);
-extern template std::unique_ptr<Array<std::string>> COVEXPORT Section::array(const std::string &section,
-                                                                          const std::string &name);
-extern template std::unique_ptr<Array<Section>> COVEXPORT Section::array(const std::string &section,
-                                                                          const std::string &name);
-extern template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string &section, const std::string &name,
-                                                                   const std::vector<bool> &def, Flag flags);
 extern template std::unique_ptr<Array<int64_t>> COVEXPORT Section::array(const std::string &section,
-                                                                      const std::string &name,
-                                                                      const std::vector<int64_t> &def, Flag flags);
+                                                                         const std::string &name);
 extern template std::unique_ptr<Array<double>> COVEXPORT Section::array(const std::string &section,
-                                                                     const std::string &name,
-                                                                     const std::vector<double> &def, Flag flags);
+                                                                        const std::string &name);
 extern template std::unique_ptr<Array<std::string>> COVEXPORT Section::array(const std::string &section,
-                                                                          const std::string &name,
-                                                                          const std::vector<std::string> &def,
-                                                                          Flag flags);
+                                                                             const std::string &name);
+extern template std::unique_ptr<Array<Section>> COVEXPORT Section::array(const std::string &section,
+                                                                         const std::string &name);
+extern template std::unique_ptr<Array<bool>> COVEXPORT Section::array(const std::string &section,
+                                                                      const std::string &name,
+                                                                      const std::vector<bool> &def, Flag flags);
+extern template std::unique_ptr<Array<int64_t>> COVEXPORT Section::array(const std::string &section,
+                                                                         const std::string &name,
+                                                                         const std::vector<int64_t> &def, Flag flags);
+extern template std::unique_ptr<Array<double>> COVEXPORT Section::array(const std::string &section,
+                                                                        const std::string &name,
+                                                                        const std::vector<double> &def, Flag flags);
+extern template std::unique_ptr<Array<std::string>> COVEXPORT Section::array(const std::string &section,
+                                                                             const std::string &name,
+                                                                             const std::vector<std::string> &def,
+                                                                             Flag flags);
 
 } // namespace config
 #ifdef CONFIG_NAMESPACE

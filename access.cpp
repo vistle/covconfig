@@ -167,7 +167,8 @@ template std::unique_ptr<Value<double>> Access::value(const std::string &path, c
 template std::unique_ptr<Value<std::string>> Access::value(const std::string &path, const std::string &section,
                                                            const std::string &name, const std::string &def, Flag flags);
 template std::unique_ptr<Value<config::Section>> Access::value(const std::string &path, const std::string &section,
-                                                           const std::string &name, const config::Section &def, Flag flags);
+                                                               const std::string &name, const config::Section &def,
+                                                               Flag flags);
 
 template std::unique_ptr<Array<bool>> Access::array(const std::string &path, const std::string &section,
                                                     const std::string &name);
@@ -178,7 +179,7 @@ template std::unique_ptr<Array<double>> Access::array(const std::string &path, c
 template std::unique_ptr<Array<std::string>> Access::array(const std::string &path, const std::string &section,
                                                            const std::string &name);
 template std::unique_ptr<Array<config::Section>> Access::array(const std::string &path, const std::string &section,
-                                                           const std::string &name);
+                                                               const std::string &name);
 
 template std::unique_ptr<Array<bool>> Access::array(const std::string &path, const std::string &section,
                                                     const std::string &name, const std::vector<bool> &def, Flag flags);
@@ -192,8 +193,8 @@ template std::unique_ptr<Array<std::string>> Access::array(const std::string &pa
                                                            const std::string &name, const std::vector<std::string> &def,
                                                            Flag flags);
 template std::unique_ptr<Array<config::Section>> Access::array(const std::string &path, const std::string &section,
-                                                           const std::string &name, const std::vector<config::Section> &def,
-                                                           Flag flags);
+                                                               const std::string &name,
+                                                               const std::vector<config::Section> &def, Flag flags);
 } // namespace config
 #ifdef CONFIG_NAMESPACE
 }

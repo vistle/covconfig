@@ -7,6 +7,7 @@
 
 #include <string>
 #include <type_traits>
+#include <memory>
 #include "export.h"
 
 #ifdef CONFIG_NAMESPACE

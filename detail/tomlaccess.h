@@ -22,7 +22,8 @@ namespace detail {
 
 class Logger;
 
-toml::table *table_for_section(const Logger &logger, toml::table &root, const std::string &section, bool create = false);
+toml::table *table_for_section(const Logger &logger, toml::table &root, const std::string &section,
+                               bool create = false);
 const toml::table *table_for_section(const Logger &logger, const toml::table &root, const std::string &section);
 
 class Entry;
@@ -33,7 +34,8 @@ struct Convert {
     typedef V TomlType;
 
     static TomlType to_toml(Entry *entry, const V &v);
-    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name, bool optional = false);
+    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name,
+                                              bool optional = false);
     static std::optional<Type> as(Entry *entry, size_t index, const toml::node &n);
 };
 
@@ -48,7 +50,8 @@ struct Convert<Section> {
     typedef toml::table TomlType;
 
     static TomlType to_toml(Entry *entry, const Type &v);
-    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name, bool optional = false);
+    static std::optional<Type> get_from_table(Entry *entry, const toml::table *tbl, const std::string &name,
+                                              bool optional = false);
     static const std::optional<Type> as(Entry *entry, size_t index, const toml::node &n);
 };
 

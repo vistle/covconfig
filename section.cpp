@@ -100,7 +100,15 @@ std::vector<std::string> Section::subsections(const std::string &section)
 std::vector<std::string> Section::entries(const std::string &section)
 {
     std::vector<std::string> entries;
-    if (const auto *tbl = static_cast<const toml::table *>(m_tomlTable)) {
+    const auto *tbl = static_cast<const toml::table *>(m_tomlTable);
+    if (tbl && !section.empty()) {
+        if (auto node = (*tbl)[section]) {
+            tbl = node.as_table();
+        } else {
+            tbl = nullptr;
+        }
+    }
+    if (tbl) {
         debug("entries") << "entries for section " + section + ":" << std::endl;
         for (auto it = tbl->begin(); it != tbl->end(); ++it) {
             debug("entries") << "   " + std::string(it->first.str()) << std::endl;

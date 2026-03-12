@@ -29,8 +29,6 @@ class Bridge;
 
 namespace detail {
 
-const toml::table *table_for_section(const toml::table &root, const std::string &section);
-
 struct Config {
     std::string path; // path fragment
     std::string base; // base directory

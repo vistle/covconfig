@@ -50,7 +50,13 @@ Section::Section(const std::string &path, const std::string &section, detail::Ma
 , m_manager(mgr ? mgr : detail::Manager::the())
 , m_config(m_manager->registerPath(path))
 {
-    debug() << "created with section=" << m_section << std::endl;
+    m_tomlTable = detail::table_for_section(*this, m_config->config, section);
+    if (m_tomlTable) {
+        auto tbl = static_cast<const toml::table *>(m_tomlTable);
+        debug() << "created with section=" << m_section << ", table=" << *tbl << std::endl;
+    } else {
+        debug() << "created with section=" << m_section << ", table=(nil)" << std::endl;
+    }
 }
 
 Section::~Section() = default;

@@ -87,6 +87,8 @@ extern template std::unique_ptr<Value<double>>
     COVEXPORT Access::value<double>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<std::string>>
     COVEXPORT Access::value<std::string>(const std::string &path, const std::string &section, const std::string &name);
+extern template std::unique_ptr<Value<config::Section>> COVEXPORT
+Access::value<config::Section>(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Value<bool>> COVEXPORT Access::value(const std::string &path,
                                                                      const std::string &section,
                                                                      const std::string &name, const bool &def,
@@ -103,6 +105,10 @@ extern template std::unique_ptr<Value<std::string>> COVEXPORT Access::value(cons
                                                                             const std::string &section,
                                                                             const std::string &name,
                                                                             const std::string &def, Flag flags);
+extern template std::unique_ptr<Value<config::Section>> COVEXPORT Access::value(const std::string &path,
+                                                                                const std::string &section,
+                                                                                const std::string &name,
+                                                                                const config::Section &def, Flag flags);
 
 extern template std::unique_ptr<Array<bool>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name);
@@ -111,6 +117,8 @@ extern template std::unique_ptr<Array<int64_t>>
 extern template std::unique_ptr<Array<double>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Array<std::string>>
+    COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name);
+extern template std::unique_ptr<Array<config::Section>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name);
 extern template std::unique_ptr<Array<bool>> COVEXPORT Access::array(const std::string &path,
                                                                      const std::string &section,
@@ -127,6 +135,9 @@ extern template std::unique_ptr<Array<double>> COVEXPORT Access::array(const std
 extern template std::unique_ptr<Array<std::string>>
     COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name,
                             const std::vector<std::string> &def, Flag flags);
+extern template std::unique_ptr<Array<config::Section>>
+    COVEXPORT Access::array(const std::string &path, const std::string &section, const std::string &name,
+                            const std::vector<config::Section> &def, Flag flags);
 } // namespace config
 #ifdef CONFIG_NAMESPACE
 }

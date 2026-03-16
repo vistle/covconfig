@@ -36,9 +36,9 @@ COVEXPORT bool operator!=(const Section &lhs, const Section &rhs);
 
 /// query for existing sections and entries within a configuration section
 class COVEXPORT Section: protected detail::Logger {
-    friend bool operator==(const Section &lhs, const Section &rhs);
-    friend bool operator!=(const Section &lhs, const Section &rhs);
-    friend std::ostream &operator<<(std::ostream &os, const Section &section);
+    friend COVEXPORT bool operator==(const Section &lhs, const Section &rhs);
+    friend COVEXPORT bool operator!=(const Section &lhs, const Section &rhs);
+    friend COVEXPORT std::ostream &operator<<(std::ostream &os, const Section &section);
     friend class File;
     friend struct detail::Convert<Section>;
 

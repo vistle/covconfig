@@ -16,7 +16,7 @@
 #include "logger.h"
 #include "../section.h"
 
-#include <toml++/toml.h>
+#include "toml/toml.hpp"
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {

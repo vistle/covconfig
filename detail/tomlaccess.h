@@ -7,7 +7,7 @@
 #pragma once
 
 #include <optional>
-#include <toml++/toml.h>
+#include "toml/toml.hpp"
 #include "../section.h"
 
 #ifdef CONFIG_NAMESPACE

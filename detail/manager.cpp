@@ -10,7 +10,7 @@
 
 #include "manager_impl.h"
 
-#include <toml++/toml.h>
+#include "toml/toml.hpp"
 
 #include <iostream>
 #include <cstdio>

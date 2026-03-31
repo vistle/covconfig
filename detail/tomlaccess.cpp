@@ -5,7 +5,7 @@
 #include "entry.h"
 #include "logger.h"
 
-#include <toml++/toml.h>
+#include "toml/toml.hpp"
 
 #include <cassert>
 #include <iostream>

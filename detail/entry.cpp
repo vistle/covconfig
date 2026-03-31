@@ -22,6 +22,18 @@ namespace CONFIG_NAMESPACE {
 namespace config {
 namespace detail {
 
+namespace {
+std::string sectionForRank(const std::string &sec, int rank = -1)
+{
+    if (rank < 0)
+        return sec;
+    const std::string suff = "-" + std::to_string(rank);
+    const auto bracket = sec.find('[');
+    if (bracket == std::string::npos)
+        return sec + suff;
+    return sec.substr(0, bracket) + suff + sec.substr(bracket);
+}
+} // namespace
 
 Entry::Entry(const std::string &classname, Manager *mgr, const std::string &path, const std::string &section,
              const std::string &name, Flag flags)
@@ -145,7 +157,7 @@ ValueEntry<V>::ValueEntry(Manager *mgr, const std::string &path, const std::stri
 {
     const int rank = this->m_manager->rank();
     if (rank >= 0) {
-        std::string s = this->m_section + "-" + std::to_string(rank);
+        std::string s = sectionForRank(this->m_section, rank);
         this->debug() << "looking for value " << s << std::endl;
         auto tbl = detail::table_for_section(*this, this->m_config->config, s);
         if (auto opt = Convert<V>::get_from_table(this, tbl, this->m_name)) {
@@ -304,7 +316,7 @@ ArrayEntry<V>::ArrayEntry(Manager *mgr, const std::string &path, const std::stri
     const toml::array *array = nullptr;
     const int rank = this->m_manager->rank();
     if (rank >= 0) {
-        std::string s = this->m_section + "-" + std::to_string(rank);
+        std::string s = sectionForRank(section, rank);
         if (auto tbl = detail::table_for_section(*this, this->m_config->config, s)) {
             array = (*tbl)[this->m_name].as_array();
             if (array)

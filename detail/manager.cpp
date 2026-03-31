@@ -135,7 +135,7 @@ void Manager::sendAllEntries()
 
 void Manager::reconfigure()
 {
-#ifdef CONFIG_NAMESPACE
+#ifdef CONFIG_NAME
     const std::string cfg = CONFIG_NAME;
 #else
     const std::string cfg = "covconfig";

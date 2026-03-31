@@ -9,12 +9,14 @@
 #include <ostream>
 #include <string>
 
+#ifndef CONFIG_NAME
 #ifdef CONFIG_NAMESPACE
 #define CONFIG_STRINGIFY_(t) #t
 #define CONFIG_STRINGIFY(t) CONFIG_STRINGIFY_(t)
 #define CONFIG_NAME CONFIG_STRINGIFY(CONFIG_NAMESPACE)
 #else
 #define CONFIG_NAME ""
+#endif
 #endif
 
 #ifdef CONFIG_NAMESPACE

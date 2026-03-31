@@ -27,6 +27,8 @@ std::string sectionForRank(const std::string &sec, int rank = -1)
 {
     if (rank < 0)
         return sec;
+    if (sec.empty())
+        return sec;
     const std::string suff = "-" + std::to_string(rank);
     const auto bracket = sec.find('[');
     if (bracket == std::string::npos)

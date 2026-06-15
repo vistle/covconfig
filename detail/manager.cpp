@@ -415,7 +415,7 @@ bool Manager::save(const std::string &path)
         return false;
     }
 
-    std::filesystem::create_directories(m_userPath);
+    std::filesystem::create_directories(std::filesystem::path(pathname).parent_path());
 
     std::string temp = pathname + ".new";
     if (!config.empty()) {

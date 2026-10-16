@@ -415,10 +415,15 @@ bool Manager::save(const std::string &path)
         return false;
     }
 
-    std::filesystem::create_directories(std::filesystem::path(pathname).parent_path());
-
     std::string temp = pathname + ".new";
     if (!config.empty()) {
+        std::error_code ec;
+        auto fullpath = std::filesystem::path(temp);
+        std::filesystem::create_directories(fullpath.parent_path(), ec);
+        if (ec) {
+            error("save") << "failed to create directory " << fullpath.parent_path() << " for saving config to " << temp << ": " << ec.message() << std::endl;
+        }
+
         try {
             std::ofstream f(temp);
             f << config;

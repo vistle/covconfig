@@ -14,6 +14,7 @@
 #include <set>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 #ifdef CONFIG_NAMESPACE
 namespace CONFIG_NAMESPACE {
@@ -75,6 +76,7 @@ protected:
     std::string m_name;
     Flag m_flags = Flag::Default;
     std::shared_ptr<Config> m_config;
+    std::mutex m_observersMutex;
     std::set<Observer *> m_observers;
 };
 

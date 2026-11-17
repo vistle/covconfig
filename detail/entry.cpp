@@ -121,6 +121,7 @@ void Entry::store()
     if (m_modified) {
         assign();
         m_modified = false;
+        std::lock_guard lock(m_observersMutex);
         debug("store") << key() << ", notifying " << m_observers.size() << " observers" << std::endl;
         for (auto *o: m_observers) {
             o->update();
@@ -135,12 +136,14 @@ Flag Entry::flags() const
 
 void Entry::addObserver(Observer *o)
 {
+    std::lock_guard lock(m_observersMutex);
     m_observers.emplace(o);
     debug("addObserver") << key() << ", now " << m_observers.size() << " observers" << std::endl;
 }
 
 void Entry::removeObserver(Observer *o)
 {
+    std::lock_guard lock(m_observersMutex);
     m_observers.erase(o);
     debug("removeObserver") << key() << ", now " << m_observers.size() << " observers" << std::endl;
 }
